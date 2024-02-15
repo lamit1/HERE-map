@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import H from '@here/maps-api-for-javascript';
 import SideBar from "./SideBar"
-import SearchBar from './SearchBar';
+import SearchBar from './SearchBox';
 
 
 export const MapContext = React.createContext(null)
@@ -18,6 +18,13 @@ function HEREMap(props) {
         lat: null,
         lng: null,
     });
+    const [userLocation, setUserLocation] = useState({
+        lat: "",
+        lng: "",
+        countryCode: "",
+        countryName: "",
+        label: ""
+    });
 
 
     const [mapInitialized, setMapInitialized] = useState(false);
@@ -27,17 +34,16 @@ function HEREMap(props) {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        resolve({
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude,
-                        });
-                        console.log(position);
+                        setCenter({
+                            lat:position.coords.latitude,
+                            lng:position.coords.longitude
+                        })
                     },
-                    (error) => {
-                        reject(error);
-                    },
+                    (error) => {reject(error);},
                     { maximumAge: 10000, timeout: 5000, enableHighAccuracy: true }
                 );
+
+
             } else {
                 reject(new Error("Geolocation is not supported by your browser."));
             }
@@ -48,12 +54,6 @@ function HEREMap(props) {
         const initializeMap = async () => {
             try {
                 let initialCenter = center;
-
-                if (!center.lat || !center.lng) {
-                    // Fetch user's current position if center coordinates are not available
-                    initialCenter = await getLocation();
-                    setCenter(initialCenter);
-                }
 
                 if (!map.current && !mapInitialized) {
                     platform.current = new H.service.Platform({ apikey });
@@ -86,6 +86,13 @@ function HEREMap(props) {
                     // Update the center of the map whenever the state changes
                     map.current.setCenter(initialCenter);
                 }
+
+                if (!center.lat || !center.lng) {
+                    // Fetch user's current position if center coordinates are not available
+                    await getLocation(platform);
+                }
+
+
             } catch (error) {
                 console.error("Error initializing map:", error);
             }
@@ -99,7 +106,7 @@ function HEREMap(props) {
         <div className=" w-screen h-screen" ref={mapRef} />
         <SearchContext.Provider value={{ service: platform.current?.searchService }}>
             <MapContext.Provider value={{ map: map.current }}>
-                <RouterServiceContext.Provider value={{routing: platform.current?.routerService}}>
+                <RouterServiceContext.Provider value={{ routing: platform.current?.routerService }}>
                     <SideBar />
                     <SearchBar location={center} />
                 </RouterServiceContext.Provider>

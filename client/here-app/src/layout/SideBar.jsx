@@ -11,14 +11,15 @@ import SearchInput from '../components/SearchInput';
 import LocationOn from '@mui/icons-material/LocationOn';
 import { MapContext, RouterServiceContext } from './Map';
 import H from '@here/maps-api-for-javascript';
-import { duration } from '@mui/material';
+import { InstructionModal } from '../components/InstructionBox';
 
 
-function SideBar() {
+function SideBar(props) {
     const { map } = useContext(MapContext)
     const { routing } = useContext(RouterServiceContext)
-
+    const {userLocation} = props
     const [hidden, setHidden] = useState(false)
+    const [showInstructions, setShowInstructions] = useState(false)
 
     const [result, setResult] = useState({
         locations: {
@@ -26,7 +27,8 @@ function SideBar() {
             destination: ""
         },
         duration: 0,
-        length: 0
+        length: 0,
+        actions: []
     })
 
     const [search, setSearch] = useState({
@@ -37,7 +39,6 @@ function SideBar() {
         originName: "",
         destinationName: ""
     });
-
 
     // Create the parameters for the routing request:
     const routingParameters = {
@@ -62,7 +63,8 @@ function SideBar() {
                     destination: search.destinationName
                 },
                 duration: result.routes[0].sections[0].travelSummary.duration,
-                length: result.routes[0].sections[0].travelSummary.length
+                length: result.routes[0].sections[0].travelSummary.length,
+                actions: result.routes[0].sections[0].actions
             }));
             const lineStrings = [];
             result.routes[0].sections.forEach((section) => {
@@ -141,14 +143,18 @@ function SideBar() {
         }))
     }
 
+    const handleClickShowInstructions = () => {
+        setShowInstructions(prevState => !prevState);
+    }
+
 
     return (
-        !hidden
+        hidden
             ? <>
                 <div class="absolute top-1 left-1 w-80 h-auto rounded-md bg-slate-500" >
                     <div class=" p-4">
                         <div class="flex justify-between">
-                            <div class="text-pretty font-medium mb-2"> Directions </div>
+                            <div class="text-pretty font-medium mb-2 text-lg"> Directions </div>
                             <div class="hover:cursor-pointer w-8 h-8 flex justify-center items-center hover:bg-black rounded-lg" onClick={() => { setHidden(hidden => !hidden) }}>
                                 <CloseIcon />
                             </div>
@@ -224,6 +230,10 @@ function SideBar() {
                             <div class="">Distance: { `${(result.length/1000)} km` }</div>
                             <div class="">Estimate time: { formatTimeDifference(result.duration) }</div>
                         </div>
+                        <div className='p-2'>
+                            <button onClick={()=>handleClickShowInstructions()}>Instructions</button>
+                            {showInstructions && <InstructionModal instructions = {result.actions}/>}
+                        </div>
                     </>}
                 </div>
             </> :
@@ -232,6 +242,7 @@ function SideBar() {
                     <DirectionsIcon />
                 </div>
             </div>
+
     )
 }
 

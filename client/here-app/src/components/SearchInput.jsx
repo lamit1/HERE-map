@@ -52,7 +52,6 @@ const SearchInput = ({ IconComponent, handleOnChoose }) => {
     }
 
     const handleOnBlur = () => {
-        console.log("Called onBlur")
         setHidden(true);
     }
 
