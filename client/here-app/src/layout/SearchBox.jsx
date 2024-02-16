@@ -1,48 +1,64 @@
-import React, { useContext, useEffect, useState } from 'react'
-import SearchIcon from '@mui/icons-material/Search';
-import { MapContext, SearchContext } from './Map';
+import React, { useContext, useEffect, useRef, useState } from 'react'
+import { LocationContext, MapContext, SearchContext } from './Map';
 import Slider from '@mui/material-next/Slider';
+import CategorySearchItem from '../components/CategorySearchItem';
+import CategoryCard from '../components/CategoryCard';
+import MyLocationIcon from '@mui/icons-material/MyLocation';
+import LocationOn from '@mui/icons-material/LocationOn';
 
 
-function SearchBar(props) {
-  const { map } = useContext(MapContext)
-  const { service } = useContext(SearchContext)
-  const { location } = props
+function SearchBox
+  () {
+  const { map } = useContext(MapContext);
+  const { service } = useContext(SearchContext);
+  const { userLocation } = useContext(LocationContext);
+  const searchInputRef = useRef(null)
+  const [hidden, setHidden] = useState(false);
+  const [currentPosition, setCurrentPosition] = useState(userLocation);
+  const [selected, setSelected] = useState("");
   const [query, setQuery] = useState({
-    at: location.lat && location.lng ? `${location.lat},${location.lng}` : "",
+    at: `${currentPosition?.lat},${currentPosition?.lng}`,
     limit: 5,
     r: 1
   });
-  const [result, setResult] = useState([])
+  const [circle, setCircle] = useState(null);
+  const [result, setResult] = useState([]);
+  const [searchResult, setSearchResult] = useState([]);
+  const [searchHidden, setSearchHidden] = useState(false);
 
   useEffect(() => {
-    setQuery(prevState => ({
-      ...prevState,
-      at: `${location.lat},${location.lng}`
-    }))
-  }, [location]);
-
-  const handleQuery = (q) => {
-    if (query !== "") {
-      const suggestQuery = {
-        'q': q,
-        // 'at': query.at,
-        'limit': query.limit,
-        'in': `circle:${query.at};r=${query.r}`
-      }
-      console.log(suggestQuery)
-      service.autosuggest(suggestQuery, onSuccess, onError);
+    setCurrentPosition(userLocation);
+    console.log(userLocation);
+    if (currentPosition?.lat && currentPosition?.lng) {
+      setQuery((prevState) => ({
+        ...prevState,
+        at: `${currentPosition?.lat},${currentPosition?.lng}`,
+      }));
+      handleReverseGeocode()
     }
-  }
+  }, [userLocation]);
 
+  useEffect(() => {
+    if (!circle) {
+      let circle = new H.map.Circle({ lat: currentPosition?.lat, lng: currentPosition?.lng }, query.r)
+      map?.addObject(circle);
+      map?.addObject(new H.map.Marker({ lat: currentPosition?.lat, lng: currentPosition?.lng }, { icon: new H.map.Icon("https://cdn-icons-png.flaticon.com/512/7945/7945007.png", { size: { w: 56, h: 56 } }) }))
+      setCircle(circle);
+    } else {
+      if (currentPosition?.lat && currentPosition?.lng) {
+        circle?.setRadius(query.r);
+      }
+    }
+  }, [query])
 
-  const onSuccess = (result) => {
-    setResult(result.items);
-    console.log(result)
-  }
-
-  const onError = (error) => {
-    console.log(error);
+  const handleReverseGeocode = () => {
+    service?.reverseGeocode({
+      'at': `${currentPosition?.lat},${currentPosition?.lng}`
+    }, (response) => {
+      const locationName = response.items[0].address.label;
+      searchInputRef.current.value = locationName;
+      map?.setCenter({ lat: currentPosition?.lat, lng: currentPosition?.lng })
+    }, console.error);
   }
 
   const handleChangeRadius = (event, range) => {
@@ -59,11 +75,53 @@ function SearchBar(props) {
     }))
   }
 
+
+  const handleOnChangeSearch = (query) => {
+    if (query !== "") {
+      console.log(query)
+      service?.discover({
+        'q': query,
+        'at': `${currentPosition?.lat},${currentPosition?.lng}`
+      }, (response) => {
+        setSearchResult(response);
+        console.log(searchResult);
+      }, console.error);
+    }
+  }
+
+  const handleClickSearchItem = (item) => {
+    if(!item.position) {
+      console.error("Location was unknown")
+    }
+    setCurrentPosition(item.position);
+    searchInputRef.current.value = item?.address?.label;
+    setSearchHidden(true);
+  }
+
   return (
-    <div class="absolute left-2/4 top-1 min-w-13  w-fit h-fit bg-slate-500 rounded-md z-1">
+    <div class="min-w-13 p-2  w-fit h-fit bg-slate-500 rounded-b-md rounded-tr-md z-1">
+      <div className="pl-2 pr-4 text-pretty text-lg">Choose starting point:</div>
       <div class="flex p-2 items-center flex-row">
-        <button class="flex items-center justify-center ml-2 rounded-full size-10" onClick={() => handleQuery()}>
-          <SearchIcon />
+        <div className="relative w-full">
+          <input ref={searchInputRef} onFocus={()=>{setSearchHidden(false)}} onBlur={()=>setSearchHidden(true)} className="rounded-md w-full h-10 p-1" onChange={(e) => handleOnChangeSearch(e.target.value)} />
+          <ul className="absolute z-10 max-h-80  overflow-auto flex flex-col w-full text-black">
+            {
+              (!searchHidden && !searchResult?.items?.map(location => (
+                <li className='p-2 border-b-2 rounded-r-md hover:bg-blue-500 hover:cursor-pointer bg-white' onClick={()=> {handleClickSearchItem(location)}}>
+                  <div className="flex flex-row">
+                    <LocationOn />
+                    <p>
+                      {/* {location.address.label} */}
+                      123
+                    </p>
+                  </div>
+                </li>
+              )))
+            }
+          </ul>
+        </div>
+        <button class="flex items-center justify-center ml-2 rounded-full size-10" onClick={() => handleReverseGeocode()}>
+          <MyLocationIcon />
         </button>
       </div>
       <div className="pl-4 pr-4">
@@ -72,9 +130,12 @@ function SearchBar(props) {
           className="mt-6"
           value={query.r}
           min={1}
-          max={100000}
+          max={10000}
           onChange={handleChangeRadius}
           valueLabelDisplay="on"
+          valueLabelFormat={(value) => {
+            return value >= 1000 ? `${(value / 1000).toFixed(1)} km` : `${value} m`;
+          }}
         />
       </div>
       <div className="pl-4 pr-4">
@@ -89,22 +150,28 @@ function SearchBar(props) {
         />
       </div>
       <p className='pl-2'>Options:</p>
-      <div className="p-2 flex flex-wrap max-w-96 justify-between">
-        <button type='supermarket' className="m-1" onClick={() => {
-          handleQuery('market');
-        }}>
-          Super market
-        </button>
+      <div className="flex flex-row max-w-96 overflow-auto">
+        <CategoryCard query={query} setResult={setResult} selected={selected} setSelected={setSelected} title={"Walmart"} />
+        <CategoryCard query={query} setResult={setResult} selected={selected} setSelected={setSelected} title={"School"} />
+        <CategoryCard query={query} setResult={setResult} selected={selected} setSelected={setSelected} title={"Food"} />
+        <CategoryCard query={query} setResult={setResult} selected={selected} setSelected={setSelected} title={"Hotel"} />
+        <CategoryCard query={query} setResult={setResult} selected={selected} setSelected={setSelected} title={"Mixue"} />
       </div>
-      <div className="max-h-96 overflow-auto">
-        {
-          result?.map((item, index) => (<div key={index} className='p-2 border-t-2'>
-            {`${index} - ${item.title}`}
-          </div>))
-        }
+      <button className='p-2 mt-2' onClick={() => { setHidden(prevState => !prevState) }}>{hidden ? `Show Result` : `Hide Result`}</button>
+      <div className="absolute top-0 left-full overflow-auto w-96 max-h-96 bg-slate-500 ml-2 rounded-lg">
+        {result?.length !== 0 ? (
+          // Use parentheses to group the JSX elements
+          !hidden && <div className='p-4'>
+            <p className='text-lg text-pretty'>Place Found: </p>
+            {result?.map((item, index) => (
+              <CategorySearchItem key={index} item={item} />
+            ))}
+          </div>
+        ) : null}
       </div>
+
     </div>
   )
 }
 
-export default SearchBar
+export default SearchBox

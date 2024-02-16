@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import H from '@here/maps-api-for-javascript';
-import SideBar from "./SideBar"
+import DirectionBox from "./DirectionBox"
 import SearchBar from './SearchBox';
+import SideBar from './SideBar';
 
 
 export const MapContext = React.createContext(null)
 export const SearchContext = React.createContext(null)
 export const RouterServiceContext = React.createContext(null)
+export const LocationContext = React.createContext(null)
 
 
 function HEREMap(props) {
@@ -18,37 +20,38 @@ function HEREMap(props) {
         lat: null,
         lng: null,
     });
-    const [userLocation, setUserLocation] = useState({
-        lat: "",
-        lng: "",
-        countryCode: "",
-        countryName: "",
-        label: ""
-    });
-
 
     const [mapInitialized, setMapInitialized] = useState(false);
 
     async function getLocation() {
-        return new Promise((resolve, reject) => {
+        try {
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        setCenter({
-                            lat:position.coords.latitude,
-                            lng:position.coords.longitude
-                        })
-                    },
-                    (error) => {reject(error);},
-                    { maximumAge: 10000, timeout: 5000, enableHighAccuracy: true }
-                );
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => resolve(position),
+                        (error) => reject(error),
+                        { maximumAge: 10000, timeout: 5000, enableHighAccuracy: true }
+                    );
+                });
 
+                // Use the state callback function to log the updated state
+                setCenter(prevState => {
+                    console.log(prevState); // This will log the previous state
+                    return {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                });
 
+                console.log(center); // This may log the previous state, not the updated state
             } else {
-                reject(new Error("Geolocation is not supported by your browser."));
+                throw new Error("Geolocation is not supported by your browser.");
             }
-        });
+        } catch (error) {
+            console.error("Error getting location:", error);
+        }
     }
+
 
     useEffect(() => {
         const initializeMap = async () => {
@@ -89,7 +92,7 @@ function HEREMap(props) {
 
                 if (!center.lat || !center.lng) {
                     // Fetch user's current position if center coordinates are not available
-                    await getLocation(platform);
+                    await getLocation();
                 }
 
 
@@ -107,8 +110,9 @@ function HEREMap(props) {
         <SearchContext.Provider value={{ service: platform.current?.searchService }}>
             <MapContext.Provider value={{ map: map.current }}>
                 <RouterServiceContext.Provider value={{ routing: platform.current?.routerService }}>
-                    <SideBar />
-                    <SearchBar location={center} />
+                    <LocationContext.Provider value={{ userLocation: center }}>
+                        <SideBar/>
+                    </LocationContext.Provider>
                 </RouterServiceContext.Provider>
             </MapContext.Provider>
         </SearchContext.Provider>
