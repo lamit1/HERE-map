@@ -6,7 +6,7 @@ const DirectionIconButton = ({ transportMode, IconComponent, onClick, selectedtr
   return (
     <div
       type={transportMode}
-      className={`hover:cursor-pointer w-8 h-8 flex justify-center items-center rounded-lg ${isSelected ? 'bg-black' : 'hover:bg-black'
+      className={`hover:cursor-pointer  w-8 h-8 flex justify-center items-center rounded-lg ${isSelected ? 'bg-primary text-bg' : 'hover:bg-scaffold'
         }`}
       onClick={onClick}
     >

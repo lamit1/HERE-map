@@ -22,8 +22,33 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
+}
+
+
+.H_ib_body {
+  padding: 1rem;
+  border: black 1px solid;
+  position: absolute;
+  width: fit-content;
+  max-width: 200px;
+  background-color: white;
+  border-radius: 1rem;
+}
+
+.H_ib_close {
+  position: absolute;
+  top: 10%;
+  right: 10%;
+  width: 20%;
+  height: 20%;
+  max-width: 1rem;
+}
+
+.H_ib_content {
+  color: black;
 }
 
 body {
@@ -50,9 +75,11 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
@@ -63,9 +90,11 @@ button:focus-visible {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }

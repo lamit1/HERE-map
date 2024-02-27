@@ -19,10 +19,7 @@ export const InstructionModal = (props) => {
 
     const { instructions } = props
     return (
-        <div className="absolute rounded-md top-0 left-full ml-2 w-80 h-auto max-h-96 overflow-auto bg-slate-500 p-2">
-            <div className="text-lg text-pretty font-medium">
-                Instructions
-            </div>
+        <div className="flex flex-col bg-bg">
             {instructions?.length == 0 ? 
             <div className=""> No route found!</div>
             :
@@ -30,7 +27,6 @@ export const InstructionModal = (props) => {
                 {instructions?.map((item, index) => (
                     <div key={index} className='p-1'>
                         <div className="">
-                            {`${index + 1}`}
                             {handleDirectionIconRender(item?.direction)}
                             {`${item?.instruction}`}
                         </div>
