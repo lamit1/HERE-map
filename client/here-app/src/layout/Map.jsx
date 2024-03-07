@@ -72,7 +72,6 @@ function HEREMap(props) {
                     });
 
                     platform.current.searchService = platform.current.getSearchService();
-                    platform.current.placeService = platform.current.getPlacesService();
                     platform.current.routerService = platform.current.getRoutingService(null, 8);
                     const defaultLayers = platform.current?.createDefaultLayers();
 
@@ -81,11 +80,12 @@ function HEREMap(props) {
                         defaultLayers.vector.normal.map, {
                         pixelRatio: window.devicePixelRatio || 1,
                         center: initialCenter,
-                        zoom: 17,
+                        zoom: 15,
                     });
 
 
                     const behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(newMap));
+
 
                     map.current = newMap;
                     // Add resize to window
@@ -96,20 +96,48 @@ function HEREMap(props) {
 
                     map.current.UI = ui;
 
+                    
+                    
+                    // Create zoom bar
+                        // Create container
+                        var container = new H.ui.Control()
+                        container.addClass("bg-bg w-16 h-30 border-scaffold border-2 absolute right-4 bottom-4 p-2 rounded-lg flex flex-col gap-4 justify-center items-center")
+
+                        // Create zoom-in button
+                        var zoomInButton = new H.ui.base.Button({
+                            label:`<img class="  rounded-full overflow-hidden border-2 border-text  w-10 h-10 hover:bg-scaffold cursor-pointer" src="/assets/add.svg" />`,
+                            onStateChange: (evt) => {
+                                if(zoomInButton.getState() ===  H.ui.base.Button.State.UP) {
+                                    const zoom = map.current?.getZoom();
+                                    map.current?.setZoom(zoom + 0.5);
+                                }
+                            }
+                        });
+                        // Create zoom-out button
+                        var zoomOutButton = new H.ui.base.Button({
+                            label:`<img class="  rounded-full overflow-hidden border-2 border-text  w-10 h-10 hover:bg-scaffold cursor-pointer" src="/assets/minus.svg" />`,
+                            onStateChange: (evt) => {
+                                if(zoomOutButton.getState() ===  H.ui.base.Button.State.UP) {
+                                    const zoom = map.current?.getZoom();
+                                    map.current?.setZoom(zoom - 0.5);
+                                }
+                            }
+                        });
+
+                        // Add 2 button to container
+                        container.addChild(zoomInButton)
+                        container.addChild(zoomOutButton)
+                    // Add zoom bar to ui layer
+                    
+                    map.current?.UI.addControl("zoom-container", container);
+
+
+
                     setMapInitialized(true);
 
                 } else if (map.current) {
                     // Update the center of the map whenever the state changes
                     map.current.setCenter(initialCenter);
-
-                    // map.current.addEventListener('pointermove', function (evt) {
-                    //     // Get the latitude and longitude of the pointer position
-                    //     const pointerPosition = map.current.screenToGeo(
-                    //         evt.currentPointer.viewportX,
-                    //         evt.currentPointer.viewportY
-                    //     );
-                    //     console.log(pointerPosition);
-                    // });
                 }
 
                 if (!center.lat || !center.lng) {
@@ -129,17 +157,15 @@ function HEREMap(props) {
 
     return <div>
         <div className=" w-screen h-screen" ref={mapRef} />
-        <PlaceServiceContext.Provider value={{ placeService: platform.current?.placeService }}>
-            <SearchContext.Provider value={{ service: platform.current?.searchService }}>
-                <MapContext.Provider value={{ map: map.current }}>
-                    <RouterServiceContext.Provider value={{ routing: platform.current?.routerService }}>
-                        <LocationContext.Provider value={{ userLocation: center }}>
-                            <SideBar />
-                        </LocationContext.Provider>
-                    </RouterServiceContext.Provider>
-                </MapContext.Provider>
-            </SearchContext.Provider>
-        </PlaceServiceContext.Provider>
+        <SearchContext.Provider value={{ service: platform.current?.searchService }}>
+            <MapContext.Provider value={{ map: map.current }}>
+                <RouterServiceContext.Provider value={{ routing: platform.current?.routerService }}>
+                    <LocationContext.Provider value={{ userLocation: center }}>
+                        <SideBar />
+                    </LocationContext.Provider>
+                </RouterServiceContext.Provider>
+            </MapContext.Provider>
+        </SearchContext.Provider>
     </div>
 
 }

@@ -33,7 +33,7 @@ a:hover {
   border: black 1px solid;
   position: absolute;
   width: fit-content;
-  max-width: 200px;
+  width: 300px;
   background-color: white;
   border-radius: 1rem;
 }
@@ -83,6 +83,30 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+
+/* width */
+::-webkit-scrollbar {
+  width: 0.5rem;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey;
+
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #646cff;
+  border-radius: 10rem;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #747bff;
+  cursor: pointer;
 }
 
 @media (prefers-color-scheme: light) {

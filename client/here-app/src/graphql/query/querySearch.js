@@ -1,36 +1,49 @@
 import { gql } from "@apollo/client";
 
 export const GET_SEARCH = `
-query Search($latitude : Latitude!, $longitude : Longitude!, $query: String!) {
-    search(near:{latitude: $latitude, longitude: $longitude}, query: $query) {
-        resultCount
-        edges{
-          node {
-            ...on LocalBusiness {
-              id
-              name
-              coordinates {
-                latitude
-                longitude
-              }
-              location {
-                county
-                country
-                locality
-              }
+query Search($latitude : Latitude!, $longitude : Longitude!, $query: String!, $first:Int) {
+  search(near:{latitude: $latitude, longitude: $longitude}, query: $query, first:$first) {
+      resultCount
+      nodes {
+        __typename
+        ... on LocalBusiness {
+          hours {
+            isOpenNow
+            today {
+              start
+              end
+              dayOfWeek
             }
           }
-          distance
-          textMatches {
-            highlights {
-              begin
-              end
-              text
+          id
+          name
+          location {
+            street
+            locality
+            county
+            country
+          }
+          coordinates {
+            latitude
+            longitude
+          }
+          website
+          photos {
+            primary {
+              url
+              caption
             }
-            fragment
-            property
+          }
+          rating {
+            value
+            provider
+          }
+          price
+          reviews{
+            totalCount
           }
         }
-      }    
-  }
+      }
+    }    
+}
 `

@@ -12,9 +12,11 @@ export default {
       'scaffold': '#a0a0a0',
       'success': '#4edd49',
       'error': '#f93920',
+      'transparent':'transparent'
     },
     extend: {},
   },
-  plugins: [],
+  plugins: [
+  ],
 }
 
