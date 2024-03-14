@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { ContentCopy, Directions, Language, Share } from "@mui/icons-material";
 import { LinkGenarator } from "./linkGenerator";
 import { TAB } from "../../layout/SideBar";
+import { useDirectionSearch } from "../../layout/contexts/DirectionSearchContext";
 
 const InformationCard = ({
   website,
@@ -12,6 +13,7 @@ const InformationCard = ({
   totalCount,
   id,
   handleChangeTab,
+  position
 }) => {
   console.log(location);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -22,13 +24,22 @@ const InformationCard = ({
       }, 5000);
     }
   }, [linkCopied]);
+  const {setDirectionSearch} = useDirectionSearch();
+
   return (
     <div className="flex flex-col max-h-fit ">
       <div className="mt-4 flex flex-row flex-auto bg-bg border-2 border-scaffold rounded-2xl overflow-hidden">
         {(
           <div
             onClick={() => {
+              window.history.pushState(null,"","/route-planer");
               handleChangeTab(TAB.DIRECTION);
+              setDirectionSearch((prevSearch) => ({
+                ...prevSearch,
+                destinationName: title,
+                destinationId: id,
+                destination: position,
+              }))
             }}
             className="flex flex-row items-center text-text hover:text-bg flex-1 hover:cursor-pointer  hover:bg-primary justify-center"
           >

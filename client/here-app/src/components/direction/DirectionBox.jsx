@@ -16,11 +16,8 @@ import { InstructionModal } from "./instruction/InstructionBox";
 import SwapVertIcon from "@mui/icons-material/SwapVert";
 import {
   AccessTime,
-  ArrowBack,
-  ArrowDownward,
   Close,
   CloseOutlined,
-  Directions,
   EditLocation,
   History,
   MyLocation,
@@ -29,12 +26,11 @@ import {
 } from "@mui/icons-material";
 import { DirectionContext, TAB } from "../../layout/SideBar";
 import { useLocationPicker } from "../../hooks/useLocationPicker";
+import { useDirectionResult } from "../../layout/contexts/DirectionResultContext";
+import { useDirectionSearch } from "../../layout/contexts/DirectionSearchContext";
 
 function DirectionBox(props) {
   const { handleChangeTab } = props;
-
-  const { destination, setDestination, setOrigin } =
-    useContext(DirectionContext);
   const originInputRef = useRef(null);
   const destinationInputRef = useRef(null);
 
@@ -42,55 +38,35 @@ function DirectionBox(props) {
   const { routing } = useContext(RouterServiceContext);
   const { service } = useContext(SearchContext);
   const { userLocation } = useContext(LocationContext);
+  const { directionResult, setDirectionResult } = useDirectionResult();
+  const { directionSearch, setDirectionSearch } = useDirectionSearch();
 
   const [locationType, setLocationType] = useState("");
+  const [result, setResult] = useState(directionResult);
 
-  const initialState = {
-    locations: {
-      origin: "",
-      destination: "",
-    },
-    duration: 0,
-    length: 0,
-    actions: [],
-  };
-
-  const [result, setResult] = useState(initialState);
-
-  const [search, setSearch] = useState({
-    origin: "",
-    originId: "",
-    originName: "",
-    destinationId: destination?.id || "",
-    destinationName: destination?.name || "",
-    destination:
-      `${
-        destination?.position?.lat || destination?.position?.lng
-          ? `${destination?.position?.lat},${destination?.position?.lng}`
-          : ""
-      }` || "",
-    transportMode: "car",
-    returnType: "summary",
-    focusOn: "",
-    result: [],
-    historyResult: [],
-  });
-
-  useLocationPicker(map, service, setSearch, setLocationType, locationType);
+  useLocationPicker(
+    map,
+    service,
+    setDirectionSearch,
+    setLocationType,
+    locationType
+  );
 
   useEffect(() => {
-    if (destination) {
+    if (!directionSearch.origin) {
       originInputRef.current.focus();
+    } else {
+      originInputRef.current.blur();
     }
-  }, [destination]);
+  }, [directionSearch?.origin]);
 
   const handleSwap = () => {
-    setSearch((prevSearch) => ({
+    setDirectionSearch((prevSearch) => ({
       ...prevSearch,
-      origin: search.destination,
-      destination: search.origin,
-      originName: search.destinationName,
-      destinationName: search.originName,
+      origin: directionSearch.destination,
+      destination: directionSearch.origin,
+      originName: directionSearch.destinationName,
+      destinationName: directionSearch.originName,
     }));
   };
 
@@ -101,13 +77,23 @@ function DirectionBox(props) {
     if (result.routes.length > 0) {
       setResult((prevResult) => ({
         locations: {
-          origin: search.originName,
-          destination: search.destinationName,
+          origin: directionSearch.originName,
+          destination: directionSearch.destinationName,
         },
         duration: result.routes[0].sections[0].travelSummary.duration,
         length: result.routes[0].sections[0].travelSummary.length,
         actions: result.routes[0].sections[0].actions,
       }));
+
+      setDirectionResult({
+        locations: {
+          origin: directionSearch.originName,
+          destination: directionSearch.destinationName,
+        },
+        duration: result.routes[0].sections[0].travelSummary.duration,
+        length: result.routes[0].sections[0].travelSummary.length,
+        actions: result.routes[0].sections[0].actions,
+      });
 
       // Create an array to store the line strings for each route section
       const lineStrings = result.routes[0].sections.map((section) => {
@@ -137,34 +123,34 @@ function DirectionBox(props) {
       // Create markers for start and end points
       const startMarker = new H.map.Marker(
         {
-          lat: search.origin.split(",")[0],
-          lng: search.origin.split(",")[1],
+          lat: directionSearch.origin.split(",")[0],
+          lng: directionSearch.origin.split(",")[1],
         },
         {
-          icon: new H.map.Icon("/assets/startmarker.png", {
-            size: { w: 28, h: 28 },
+          icon: new H.map.Icon("/assets/startmarker.svg", {
+            size: { w: 32, h: 32 },
           }),
         }
       );
 
       startMarker.setData({
-        label: `Start: ${search.originName}`,
+        label: `Start: ${directionSearch.originName}`,
       });
 
       const endMarker = new H.map.Marker(
         {
-          lat: search.destination.split(",")[0],
-          lng: search.destination.split(",")[1],
+          lat: directionSearch.destination.split(",")[0],
+          lng: directionSearch.destination.split(",")[1],
         },
         {
-          icon: new H.map.Icon("/assets/endmarker.png", {
-            size: { w: 28, h: 28 },
+          icon: new H.map.Icon("/assets/endmarker.svg", {
+            size: { w: 32, h: 32 },
           }),
         }
       );
 
       endMarker.setData({
-        label: `Destination: ${search.destinationName}`,
+        label: `Destination: ${directionSearch.destinationName}`,
       });
 
       // Create a group to hold all map objects
@@ -173,8 +159,8 @@ function DirectionBox(props) {
 
       var originBubble = new H.ui.InfoBubble(
         {
-          lat: search.origin.split(",")[0],
-          lng: search.origin.split(",")[1],
+          lat: directionSearch.origin.split(",")[0],
+          lng: directionSearch.origin.split(",")[1],
         },
         {
           content: startMarker.getData().label, // Extract label from marker data
@@ -196,8 +182,8 @@ function DirectionBox(props) {
 
       var destinationBubble = new H.ui.InfoBubble(
         {
-          lat: search.destination.split(",")[0],
-          lng: search.destination.split(",")[1],
+          lat: directionSearch.destination.split(",")[0],
+          lng: directionSearch.destination.split(",")[1],
         },
         {
           content: endMarker.getData().label, // Extract label from marker data
@@ -227,20 +213,23 @@ function DirectionBox(props) {
     }
   };
 
+  console.log(directionSearch);
+
   // Create the parameters for the routing request:
   const routingParameters = {
     routingMode: "fast",
-    transportMode: `${search.transportMode}`,
+    transportMode: `${directionSearch?.transportMode}`,
     // The start point of the route:
-    origin: `${search.origin}`,
+    origin: `${directionSearch.origin}`,
     // The end point of the route:
-    destination: `${search.destination}`,
+    destination: `${directionSearch?.destination}`,
     // Include the route shape in the response
     return: "polyline,travelSummary,actions,instructions",
   };
 
   const handleGetDirection = () => {
-    if (!search.destination || !search.destination) return;
+    console.log(routingParameters);
+    if (!directionSearch.destination || !directionSearch.destination) return;
     //Remove the current marker
     const currentObjects = map.getObjects();
     if (currentObjects.length > 0) {
@@ -268,7 +257,7 @@ function DirectionBox(props) {
   };
 
   const handleOnClickOrigin = (id, origin, originName) => {
-    setSearch((prevSearch) => ({
+    setDirectionSearch((prevSearch) => ({
       ...prevSearch,
       origin: `${origin.lat},${origin.lng}`,
       originName: originName,
@@ -277,7 +266,7 @@ function DirectionBox(props) {
   };
 
   const handleOnClickDestination = (id, des, destinationName) => {
-    setSearch((prevSearch) => ({
+    setDirectionSearch((prevSearch) => ({
       ...prevSearch,
       destination: `${des.lat},${des.lng}`,
       destinationName: destinationName,
@@ -294,14 +283,14 @@ function DirectionBox(props) {
         let title = response.items[0].address.label;
         let position = response.items[0].access[0];
         // let id = response.items[0]?.id;
-        if (search.onFocus == "origin") {
-          setSearch((prevSearch) => ({
+        if (directionSearch.onFocus == "origin") {
+          setDirectionSearch((prevSearch) => ({
             ...prevSearch,
             originName: title,
             origin: `${position.lat},${position.lng}`,
           }));
         } else {
-          setSearch((prevSearch) => ({
+          setDirectionSearch((prevSearch) => ({
             ...prevSearch,
             destinationName: title,
             destination: `${position.lat},${position.lng}`,
@@ -314,7 +303,7 @@ function DirectionBox(props) {
 
   const handleOnFocus = (value, onFocus) => {
     // Set onFocus in search
-    setSearch((prevSearch) => ({
+    setDirectionSearch((prevSearch) => ({
       ...prevSearch,
       onFocus: onFocus,
     }));
@@ -323,7 +312,7 @@ function DirectionBox(props) {
       //Set search to local storage history.
       const items = JSON.parse(localStorage.getItem("history"));
 
-      return setSearch((prevSearch) => ({
+      return setDirectionSearch((prevSearch) => ({
         ...prevSearch,
         result: [],
         historyResult: items?.length != 0 ? items : [],
@@ -334,21 +323,25 @@ function DirectionBox(props) {
   };
 
   useEffect(() => {
-    if (search.destination && search.origin) {
+    if (directionSearch.destination && directionSearch.origin) {
       handleGetDirection();
     }
-  }, [search.origin, search.destination, search.transportMode]);
+  }, [
+    directionSearch.origin,
+    directionSearch.destination,
+    directionSearch.transportMode,
+  ]);
 
   const handleOnChange = (value) => {
     // Set the input text
-    if (search.onFocus == "origin") {
-      setSearch((prevSearch) => ({
+    if (directionSearch.onFocus == "origin") {
+      setDirectionSearch((prevSearch) => ({
         ...prevSearch,
         originName: value,
         origin: null,
       }));
-    } else if (search.onFocus == "destination") {
-      setSearch((prevSearch) => ({
+    } else if (directionSearch.onFocus == "destination") {
+      setDirectionSearch((prevSearch) => ({
         ...prevSearch,
         destinationName: value,
         destination: null,
@@ -363,7 +356,7 @@ function DirectionBox(props) {
           limit: 5,
         },
         function (searchResult) {
-          setSearch((prevSearch) => ({
+          setDirectionSearch((prevSearch) => ({
             ...prevSearch,
             result: searchResult?.items,
           }));
@@ -375,7 +368,7 @@ function DirectionBox(props) {
     } else {
       const items = JSON.parse(localStorage.getItem("history"));
 
-      return setSearch((prevSearch) => ({
+      return setDirectionSearch((prevSearch) => ({
         ...prevSearch,
         historyResult: items.length != 0 ? items : [],
         result: [],
@@ -385,16 +378,16 @@ function DirectionBox(props) {
 
   const handleOnBlur = () => {
     // Set the onFocus to "" and hide the searchResult
-    setSearch((prevSearch) => ({
+    setDirectionSearch((prevSearch) => ({
       ...prevSearch,
       onFocus: "",
     }));
   };
 
   const handleOnClick = (id, position, locationName) => {
-    if (search.onFocus == "origin") {
+    if (directionSearch.onFocus == "origin") {
       handleOnClickOrigin(id, position, locationName);
-    } else if (search.onFocus == "destination") {
+    } else if (directionSearch.onFocus == "destination") {
       handleOnClickDestination(id, position, locationName);
     }
   };
@@ -406,25 +399,19 @@ function DirectionBox(props) {
           <div
             className="hover:cursor-pointer text-bg"
             onClick={(e) => {
-              window.history.replaceState(null, "New Page Title", "/");
+              window.history.back();
               handleChangeTab(TAB.SEARCH);
               map?.removeObjects(map?.getObjects());
-              setOrigin({
-                position: {
-                  lat: "",
-                  lng: "",
-                },
-                locationName: "",
-                locationId: "",
-              });
-              setDestination({
-                position: {
-                  lat: "",
-                  lng: "",
-                },
-                locationName: "",
-                locationId: "",
-              });
+              setDirectionSearch((prevSearch) => ({
+                ...prevSearch,
+                origin: "",
+                originId: "",
+                originName:  "",
+                destinationId: "",
+                destinationName: "",
+                destination: "",
+              }));
+              setDirectionResult();
             }}
           >
             <CloseOutlined />
@@ -439,52 +426,52 @@ function DirectionBox(props) {
             IconComponent={DirectionsWalkIcon}
             onClick={(event) => {
               const mode = event.currentTarget.getAttribute("type");
-              setSearch((search) => ({
+              setDirectionSearch((search) => ({
                 ...search,
                 transportMode:
                   search.transportMode !== mode ? mode : search.transportMode,
               }));
             }}
-            selectedtransportMode={search.transportMode}
+            selectedtransportMode={directionSearch.transportMode}
           />
           <DirectionIconButton
             transportMode="car"
             IconComponent={DirectionsCarFilledIcon}
             onClick={(event) => {
               const mode = event.currentTarget.getAttribute("type");
-              setSearch((search) => ({
+              setDirectionSearch((search) => ({
                 ...search,
                 transportMode:
                   search.transportMode !== mode ? mode : search.transportMode,
               }));
             }}
-            selectedtransportMode={search.transportMode}
+            selectedtransportMode={directionSearch.transportMode}
           />
           <DirectionIconButton
             transportMode="truck"
             IconComponent={LocalShippingIcon}
             onClick={(event) => {
               const mode = event.currentTarget.getAttribute("type");
-              setSearch((search) => ({
+              setDirectionSearch((search) => ({
                 ...search,
                 transportMode:
                   search.transportMode !== mode ? mode : search.transportMode,
               }));
             }}
-            selectedtransportMode={search.transportMode}
+            selectedtransportMode={directionSearch.transportMode}
           />
           <DirectionIconButton
             transportMode="bicycle"
             IconComponent={DirectionsBikeIcon}
             onClick={(event) => {
               const mode = event.currentTarget.getAttribute("type");
-              setSearch((search) => ({
+              setDirectionSearch((search) => ({
                 ...search,
                 transportMode:
                   search.transportMode !== mode ? mode : search.transportMode,
               }));
             }}
-            selectedtransportMode={search.transportMode}
+            selectedtransportMode={directionSearch.transportMode}
           />
         </div>
         <div className="flex flex-row  mt-4">
@@ -497,7 +484,7 @@ function DirectionBox(props) {
               <div className="w-64 overflow-hidden border-2 flex flex-row items-center rounded-full border-scaffold">
                 <input
                   ref={originInputRef}
-                  value={search.originName}
+                  value={directionSearch.originName}
                   onFocus={(e) => {
                     handleOnFocus(e.target.value, "origin");
                   }}
@@ -510,16 +497,16 @@ function DirectionBox(props) {
                   className=" text-pretty w-40 text-base focus:outline-none m-0 pl-4 py-0 rounded-full bg-bg  flex-auto"
                   placeholder="Start point..."
                 />
-                {search?.originName?.length > 0 && (
+                {directionSearch?.originName?.length > 0 && (
                   <div
                     onClick={() => {
-                      setSearch((prevSearch) => ({
+                      setDirectionSearch((prevSearch) => ({
                         ...prevSearch,
                         originName: "",
                         originId: "",
                         origin: "",
                       }));
-                      setResult(initialState);
+                      setResult(null);
                       map?.removeObjects(map?.getObjects());
                     }}
                     className=" hover:cursor-pointer size-10 hover:bg-scaffold flex items-center justify-center"
@@ -556,7 +543,7 @@ function DirectionBox(props) {
               <div className="w-64 border-2 overflow-hidden flex flex-row items-center rounded-full border-scaffold">
                 <input
                   ref={destinationInputRef}
-                  value={search.destinationName}
+                  value={directionSearch.destinationName}
                   onFocus={(e) => {
                     handleOnFocus(e.target.value, "destination");
                   }}
@@ -569,33 +556,17 @@ function DirectionBox(props) {
                   className="w-40 border-scaffold text-pretty text-base focus:outline-none m-0  px-4 py-0 rounded-full bg-bg flex-auto"
                   placeholder="Destination..."
                 />
-                {search?.destinationName?.length > 0 && (
+                {directionSearch?.destinationName?.length > 0 && (
                   <div
                     onClick={() => {
                       map?.removeObjects(map?.getObjects());
-                      setSearch((prevSearch) => ({
+                      setDirectionSearch((prevSearch) => ({
                         ...prevSearch,
                         destinationName: "",
                         destinationId: "",
                         destination: "",
                       }));
-                      setResult(initialState);
-                      setOrigin({
-                        position: {
-                          lat: "",
-                          lng: "",
-                        },
-                        locationName: "",
-                        locationId: "",
-                      });
-                      setDestination({
-                        position: {
-                          lat: "",
-                          lng: "",
-                        },
-                        locationName: "",
-                        locationId: "",
-                      });
+                      setResult(null);
                     }}
                     className=" hover:cursor-pointer hover:bg-scaffold flex items-center justify-center size-10"
                   >
@@ -635,7 +606,8 @@ function DirectionBox(props) {
       </div>
       <div className="w-full h-0.5 bg-scaffold shadow-2xl"></div>
       {/* Search direction input result */}
-      {(search.onFocus == "origin" || search.onFocus == "destination") && (
+      {(directionSearch.onFocus == "origin" ||
+        directionSearch.onFocus == "destination") && (
         <div className="flex flex-col mt-2 max-w-96 min-w-96">
           <div
             onMouseDown={() => handleOnClickYourLocation()}
@@ -651,8 +623,8 @@ function DirectionBox(props) {
             </div>
           </div>
 
-          {search.result.length != 0
-            ? search.result.map(
+          {directionSearch.result.length != 0
+            ? directionSearch.result.map(
                 (item, index) =>
                   item?.access?.[0] && (
                     <div
@@ -680,7 +652,7 @@ function DirectionBox(props) {
                     </div>
                   )
               )
-            : search.historyResult
+            : directionSearch.historyResult
                 ?.reverse()
                 .slice(0, 5)
                 .map((item, index) => (
@@ -706,10 +678,10 @@ function DirectionBox(props) {
         </div>
       )}
       {/* Calculate Direction Result */}
-      {search.origin != "" &&
-      search.destination != "" &&
-      result.actions.length != 0 &&
-      search.onFocus == "" ? (
+      {directionSearch.origin != "" &&
+      directionSearch.destination != "" &&
+      directionResult?.actions?.length != 0 &&
+      directionSearch.onFocus == "" ? (
         <div className="max-h-full overflow-y-auto overflow-x-hidden">
           <div className="max-w-96 min-w-96">
             <div className="flex flex-row">
@@ -720,9 +692,11 @@ function DirectionBox(props) {
                       <StraightenOutlined fontSize="large" />
                     </div>
                     <div className="flex-auto text-lg flex justify-center items-center">
-                      {result.length > 1000
-                        ? `${(result.length / 1000).toPrecision(2)} km`
-                        : `${result.length} m`}
+                      {directionResult?.length > 1000
+                        ? `${(directionResult?.length / 1000).toPrecision(
+                            2
+                          )} km`
+                        : `${directionResult?.length} m`}
                     </div>
                   </div>
                   <div className="flex flex-row p-2 flex-1 items-center justify-start border-l-2 border-scaffold">
@@ -736,8 +710,8 @@ function DirectionBox(props) {
                 </div>
               </div>
             </div>
-            {result.length !== null && (
-              <InstructionModal instructions={result.actions} />
+            {directionResult?.length !== null && (
+              <InstructionModal instructions={directionResult?.actions} />
             )}
           </div>
         </div>

@@ -8,7 +8,7 @@ export const fetchSearchMapQuest = async (
     query,
     setDestination,
     setDetailId,
-    setSearch,
+    setSearchResults,
     handleChangeTab) => {
 
     if (query == "") {
@@ -76,7 +76,7 @@ export const fetchSearchMapQuest = async (
                     item?.reviews.totalCount,
                     setDestination,
                     setDetailId,
-                    setSearch
+                    setSearchResults
                 );
             }
             );

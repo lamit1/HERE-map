@@ -1,11 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { MapContext, PlaceServiceContext, SearchContext } from '../../layout/Map';
-import { SearchBoxContext } from './SearchBox';
 
 function CategoryCard(props) {
     const { Icon, title, search } = props;
-
-    const { setSearch } = useContext(SearchBoxContext);
     const [isHovered, setIsHovered] = useState(false);
 
 

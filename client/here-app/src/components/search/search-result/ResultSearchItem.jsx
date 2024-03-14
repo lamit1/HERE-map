@@ -3,27 +3,24 @@ import React, { useContext, useEffect } from "react";
 import { SearchBoxContext } from "../SearchBox";
 import { DirectionContext } from "../../../layout/SideBar";
 import { MapContext } from "../../../layout/Map";
-import { addBubbleInfoCategory, addBubbleLabel } from "../../../utils/bubble";
 import {
   removeSpecialCharacters,
   toLowerCaseNonAccentVietnamese,
 } from "../../../utils/accent";
+import { LinkGenarator } from "../../detail/linkGenerator";
 
 const ResultSearchItem = ({ item }) => {
   const { map } = useContext(MapContext);
+  console.log(item)
   const { setDetailId, setSearch, search } = useContext(SearchBoxContext);
   const { setDestination } = useContext(DirectionContext);
   const handleOnClickResultSearch = (item) => {
-    map?.removeObjects(map?.getObjects());
     setDetailId(item.id);
-    setSearch(item.name);
 
     //Get the localstorage items string.
     let items = localStorage.getItem("history");
 
     if (String(item.id).startsWith("here")) {
-      // Add lable info bubble
-      addBubbleLabel(map, item?.name, "", item?.position);
       setDestination((prevDes) => ({
         ...prevDes,
         position: item?.position,
@@ -67,21 +64,6 @@ const ResultSearchItem = ({ item }) => {
         localStorage.setItem("history", JSON.stringify(storedItems));
       }
     } else {
-      // Add category info bubble
-      addBubbleInfoCategory(
-        map,
-        item.position.lat,
-        item.position.lng,
-        item.id,
-        item.name,
-        item.image,
-        item.address,
-        item.rating,
-        item.totalReviews,
-        setDestination,
-        setDetailId,
-        setSearch
-      );
       setDestination({
         position: item?.position,
         name: item?.name,
@@ -123,6 +105,12 @@ const ResultSearchItem = ({ item }) => {
         localStorage.setItem("history", JSON.stringify(storedItems));
       }
     }
+    console.log(item)
+    window.history.pushState(
+      null,
+      "",
+      LinkGenarator.convertLocationToUrl(item?.id, item?.country || "unknown", item?.name)
+    );
   };
 
   const highlightMapQuestQuery = (text, query) => {
@@ -193,12 +181,13 @@ const ResultSearchItem = ({ item }) => {
         <div className="text-red">
           <LocationOn />
         </div>
-        <div className=" line-clamp-1 ml-4 overflow-clip">
+        <div className=" line-clamp-1 ml-4 overflow-clip flex flex-col">
           <div
             dangerouslySetInnerHTML={{
               __html: highlightQuery(item?.name, item?.highlights, search),
             }}
           />
+          <div className="text-xs text-pretty ">{item?.address}</div>
         </div>
       </div>
     </div>

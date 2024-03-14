@@ -34,6 +34,7 @@ export const useLocationPicker = (
             locationName = res?.items?.[0]?.title;
             locationId = res?.items?.[0]?.id;
             locationAddress = res?.items?.[0]?.address?.label;
+            locationCountry = res?.items?.[0]?.address?.label;
             map?.removeObjects(map?.getObjects());
             if (locationType === "origin") {
               setSearch((prevSearch) => ({
@@ -42,7 +43,7 @@ export const useLocationPicker = (
                 originName: locationName,
                 originId: locationId,
               }));
-              addBubbleLabel(map, "Start: " + locationName, "Address: " +  locationAddress, position);
+              addBubbleLabel(map, "Start: " + locationName, "Address: " +  locationAddress, position, locationId, locationName, locationCountry || "us");
             } else if (locationType === "destination") {
               setSearch((prevSearch) => ({
                 ...prevSearch,
@@ -50,7 +51,8 @@ export const useLocationPicker = (
                 destinationName: locationName,
                 destinationId: locationId,
               }));
-              addBubbleLabel(map, "Destination: " + locationName, "Address: " +  locationAddress, position);
+              addBubbleLabel(map, "Destination: " + locationName, "Address: " +  locationAddress, position, locationId, locationName, locationCountry || "us");
+              
             }
           },
           function (error) {

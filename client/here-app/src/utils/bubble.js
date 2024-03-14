@@ -1,3 +1,5 @@
+import { LinkGenarator } from "../components/detail/linkGenerator";
+
 // Function to remove the pointerleave listener
 const removePointerLeaveListener = (marker, bubble, map) => {
   marker.removeEventListener("pointerleave", (evt) =>
@@ -18,7 +20,7 @@ const addPointerLeaveListener = (marker, bubble, map) => {
 const pointerLeaveListener = function (evt, marker, bubble, map) {
   // Check if the bubble exists and remove it
   marker.setIcon(
-    new H.map.Icon("/assets/endmarker.png", { size: { w: 20, h: 20 } })
+    new H.map.Icon("/assets/endmarker.svg", { size: { w: 24, h: 24 } })
   );
   marker.setZIndex(0);
   if (bubble) {
@@ -39,14 +41,16 @@ export const addBubbleInfoCategory = (
   totalReviews,
   setDestination,
   setDetailId,
-  setSearch
+  setSearchResults,
+  country
 ) => {
+  console.log(country);
   try {
     const marker = new H.map.Marker(
       { lat, lng },
       {
-        icon: new H.map.Icon("/assets/endmarker.png", {
-          size: { w: 20, h: 20 },
+        icon: new H.map.Icon("/assets/endmarker.svg", {
+          size: { w: 24, h: 24 },
         }),
       }
     );
@@ -103,7 +107,7 @@ export const addBubbleInfoCategory = (
       function (evt) {
         // Assuming newWidth and newHeight are the new desired width and height of the marker icon
         marker.setIcon(
-          new H.map.Icon("/assets/endmarker.png", { size: { w: 40, h: 40 } })
+          new H.map.Icon("/assets/endmarker.svg", { size: { w: 40, h: 40 } })
         );
         map?.UI.addBubble(bubble);
         bubble.open();
@@ -120,23 +124,38 @@ export const addBubbleInfoCategory = (
 
     marker.addEventListener("tap", (evt) => {
       map?.removeObjects(map?.getObjects().filter((o) => o !== marker));
-      setSearch(name);
       setDestination((prevDes) => ({
         position: { lat, lng },
         name: name,
         id: id,
       }));
+      if(window.location.href !== LinkGenarator.convertLocationToUrl(id, country, name)) {
+        console.log(country);
+        window.history.pushState(
+          null,
+          "",
+          LinkGenarator.convertLocationToUrl(id, country, name)
+        );
+      }
       setDetailId(id);
     });
-    map?.setCenter({lat,lng});
+    map?.setCenter({ lat, lng });
   } catch (error) {
     console.log(error);
   }
 };
 
-export const addBubbleLabel = (map, title, address, position) => {
+export const addBubbleLabel = (
+  map,
+  title,
+  address,
+  position,
+  id,
+  name,
+  country
+) => {
   const marker = new H.map.Marker(position, {
-    icon: new H.map.Icon("/assets/endmarker.png", { size: { w: 20, h: 20 } }),
+    icon: new H.map.Icon("/assets/endmarker.svg", { size: { w: 24, h: 24 } }),
   });
   marker.setData(`
     <div className= "display: flex, flex-direction:column" >
@@ -144,7 +163,7 @@ export const addBubbleLabel = (map, title, address, position) => {
       <div>${address}</div>
     </div>
   `);
-  
+
   const bubble = new H.ui.InfoBubble(position, {
     content: marker.getData(),
   });
@@ -153,7 +172,7 @@ export const addBubbleLabel = (map, title, address, position) => {
     "pointerenter",
     function (evt) {
       marker.setIcon(
-        new H.map.Icon("/assets/endmarker.png", { size: { w: 40, h: 40 } })
+        new H.map.Icon("/assets/endmarker.svg", { size: { w: 40, h: 40 } })
       );
       marker.setZIndex(10);
       map?.UI.addBubble(bubble);
@@ -169,5 +188,5 @@ export const addBubbleLabel = (map, title, address, position) => {
     false
   );
   map?.addObject(marker);
-  map?.setCenter(position)
+  map?.setCenter(position);
 };

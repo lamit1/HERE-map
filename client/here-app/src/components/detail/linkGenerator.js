@@ -1,5 +1,5 @@
 export class LinkGenarator {
-  static #baseUrl = "http://localhost:5173/locations";
+  static #baseUrl = "http://localhost:5173/search/locations";
   /*
     @params:
         id: The location id.
@@ -10,12 +10,13 @@ export class LinkGenarator {
         to the url 
         for location sharing
     */
-  static convertLocationToUrl = (id="", country="", title="") => {
+  static convertLocationToUrl = (id = "", country = "", title = "") => {
+    console.log(country);
     return (
       this.#baseUrl +
-      `/${String(country).toLowerCase()}/${
-        String(title).replace(/\s+/g, "-").toLowerCase()
-      }-${id}`
+      `/${String(country).toLowerCase()}/${String(title)
+        .replace(/\s+/g, "-")
+        .toLowerCase()}-${id}`
     );
   };
 
@@ -27,11 +28,17 @@ export class LinkGenarator {
          to id.
     */
   static convertUrlToId = (url = "") => {
-    let id = ""
-    if (String(url).startsWith(this.#baseUrl)) {
-        let titleWithId = url.split("/").at(url.split("/").length -1);
-        id = titleWithId.split("-").at(titleWithId.split("-").length-1);
+    let id = "";
+    let titleWithId = url.split("/").at(url.split("/").length - 1);
+    if (
+      String(url).startsWith(this.#baseUrl) &&
+      !String(url).includes("here:af:streetsection")
+    ) {
+      id = titleWithId.split("-").at(titleWithId.split("-").length - 1);
+      return id;
+    } else {
+      id = titleWithId.split("-here:af:streetsection").at(1);
+      return `here:af:streetsection${id}`;
     }
-    return id;
   };
 }

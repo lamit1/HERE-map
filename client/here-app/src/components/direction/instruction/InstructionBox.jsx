@@ -1,7 +1,4 @@
-import React from 'react'
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import React from 'react';
 import InstructionItem from './InstructionItem';
 
 export const InstructionModal = (props) => {

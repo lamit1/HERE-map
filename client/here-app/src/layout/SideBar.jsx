@@ -1,21 +1,40 @@
 import React, { useContext, useEffect, useState } from "react";
 import DirectionBox from "../components/direction/DirectionBox";
-import SearchBox from "../components/search/SearchBox";
+import SearchBox, { SearchBoxContext } from "../components/search/SearchBox";
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import { ArrowForward } from "@mui/icons-material";
 import DetailContainer from "../components/detail/DetailContainer";
-import { MapContext } from "./Map";
-import { createBrowserRouter } from "react-router-dom";
+import { MapContext, SearchContext } from "./Map";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { ResultSearchProvider } from "../components/search/context/ResultSearchContext";
+import { DetailLocationProvider } from "../components/search/context/DetailLocationContext";
+import { DirectionResultProvider } from "./contexts/DirectionResultContext";
+import { DirectionSearchProvider } from "./contexts/DirectionSearchContext";
+import useURLParams from "../hooks/useURLParams";
+import { PageResultProvider } from "./contexts/PageResultContext";
 
 export const TAB = {
   DIRECTION: "Direction",
   SEARCH: "Search",
+  NOT_FOUND: "Not found",
 };
 
 export const DirectionContext = React.createContext(null);
 
-const SideBar = () => {
-  const [tab, setTab] = useState(TAB.SEARCH);
+const SideBar = ({ match }) => {
+  const { path, params } = useURLParams();
+  const [tab, setTab] = useState();
+
+  useEffect(() => {
+    const currentTab =
+      path.startsWith("/search") || path.startsWith("/")
+        ? TAB.SEARCH
+        : path.startsWith("/route-planer")
+        ? TAB.DIRECTION
+        : TAB.NOT_FOUND;
+    setTab(currentTab);
+  }, [path, params]);
+
   const [isClose, setIsClose] = useState(false);
   const [origin, setOrigin] = useState({
     id: "",
@@ -65,7 +84,17 @@ const SideBar = () => {
           isClose ? "" : "w-96"
         }`}
       >
-        {!isClose && handleReturnTab()}
+        <PageResultProvider maxPage={0}>
+          <DirectionResultProvider>
+            <DirectionSearchProvider origin={origin} destination={destination}>
+              <ResultSearchProvider>
+                <DetailLocationProvider>
+                  {!isClose && handleReturnTab()}
+                </DetailLocationProvider>
+              </ResultSearchProvider>
+            </DirectionSearchProvider>
+          </DirectionResultProvider>
+        </PageResultProvider>
         <div
           onClick={handleClose}
           className="absolute top-1/2 flex left-full w-8 h-12 shadow-2xl border-scaffold border-2 rounded-e-3xl hover:bg-scaffold hover:cursor-pointer bg-bg"
