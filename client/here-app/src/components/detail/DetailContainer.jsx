@@ -110,6 +110,7 @@ const DetailContainer = ({ id, handleChangeTab }) => {
           <div
             onClick={() => {
               if (!document.referrer.startsWith(window.location.origin)) {
+                console.log(document.referrer);
                 history.replaceState(null, "", "/");
               } else {
                 window.history.back();
@@ -176,6 +177,8 @@ const DetailContainer = ({ id, handleChangeTab }) => {
         <div className="w-full bg-primary text-bg flex flex-row justify-start items-center p-2 ">
           <div
             onClick={() => {
+              console.log(document.referrer)
+              console.log(window.location.origin)
               if (!document.referrer.startsWith(window.location.origin)) {
                 history.replaceState(null, "", "/");
               } else {

@@ -20,7 +20,6 @@ const CategorySearchItem = ({ item, handleChangeTab }) => {
       map?.removeObjects(map?.getObjects());
       setInfo({ id: item?.id });
       setDetailId(item?.id);
-      
 
       //Pre-set the info
       setDestination({
@@ -76,12 +75,15 @@ const CategorySearchItem = ({ item, handleChangeTab }) => {
   };
   return (
     <div
-      onMouseDown={() => handleOnClickResultItem(item)}
-      className="flex flex-row min-h-36 hover:bg-scaffold hover:cursor-pointer hover:text-bg flex-auto border-b-2 border-scaffold"
+      onMouseDown={(e) => {
+        e.stopPropagation();
+        handleOnClickResultItem(item);
+      }}
+      className="flex flex-col max-h-32 hover:bg-scaffold hover:cursor-pointer hover:text-bg flex-auto border-b-2 border-scaffold"
     >
-      <div className="p-4 flex flex-row flex-auto max-w-96 min-w-96">
+      <div className="px-4 py-2 flex flex-row flex-auto max-w-96 min-w-96 ">
         <img
-          className="size-20 min-w-20 min-h-20 object-cover border-4 rounded-full border-primary"
+          className="size-16 min-w-16 min-h-16 object-cover border-4 rounded-full border-primary"
           src={item?.image || "/assets/no-image.jpg"}
           onError={(e) => {
             e.target.src = "/assets/no-image.jpg"; // Replace the broken image with the placeholder image
@@ -90,29 +92,38 @@ const CategorySearchItem = ({ item, handleChangeTab }) => {
         />
         <div className="flex flex-col gap-2 flex-auto ml-2">
           <div className="flex flex-row">
-            <div className="text-lg font-bold flex-1 mr-4">{item.name}</div>
-            {item.totalReviews > 0 && (
-              <RatingCard
-                value={item.rating.value}
-                totalCount={item.totalReviews}
-              />
-            )}
-          </div>
-          <div className="flex flex-row">
-            <div className="text-red">
-              <LocationOn />
+            <div className="text-lg font-bold flex-1 mr-4 line-clamp-2">
+              {item.name}
             </div>
-            <div className="text-sm flex items-center">{item.address}</div>
+            <div className="">
+              {item.totalReviews > 0 && (
+                <RatingCard
+                  fontSize="1 rem"
+                  value={item.rating.value}
+                  totalCount={item.totalReviews}
+                />
+              )}
+            </div>
           </div>
-          {item.website && (
-            <a className="flex flex-row" href={item.website}>
-              <div className="flex items-center">
-                <Language />
-              </div>
-              <div className="">Website</div>
-            </a>
-          )}
         </div>
+      </div>
+      <div className="flex flex-row justify-between px-4 pb-2">
+        <div className="flex flex-row">
+          <div className="text-red">
+            <LocationOn />
+          </div>
+          <div className="text-sm flex items-center">{item.address}</div>
+        </div>
+        {item.website && (
+          <a 
+          onMouseDown={(e) => e.stopPropagation()}
+          className="flex flex-row" href={item.website}>
+            <div className="flex items-center">
+              <Language />
+            </div>
+            <div className="">Website</div>
+          </a>
+        )}
       </div>
     </div>
   );
