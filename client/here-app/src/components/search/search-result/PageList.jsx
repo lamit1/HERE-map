@@ -39,7 +39,6 @@ const PageList = ({ index = 0, maxPage = 0 }) => {
             ((index + _index ) > 0 && (index + _index ) <= maxPage) && <div
               key={_index}
               onClick={() => {
-                console.log(index, _index)
                 setPage((prevPage) => ({
                   ...prevPage,
                   index: Number(index+_index-1),
