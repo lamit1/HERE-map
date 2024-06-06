@@ -19,12 +19,12 @@ const ReviewCard = ({ reviews, totalCount }) => {
                   e.target.onerror = null; // Prevent infinite loop by removing the error handler
                 }}
                 className="rounded-full w-20 h-20 object-cover border-4 border-primary"
-                src={review.author.picture || "/assets/no-image.jpg"}
+                src={review.author?.picture || "/assets/no-image.jpg"}
               />
               <div className="flex flex-row flex-auto">
                 <div className="flex flex-col ml-2">
                   <p className="text-pretty font-bold text-lg max-w-24 overflow-clip">
-                    {review.author.name}
+                    {review.author?.name}
                   </p>
                   <div className="text-sm">{review.date}</div>
                 </div>

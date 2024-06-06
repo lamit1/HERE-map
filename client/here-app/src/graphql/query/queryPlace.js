@@ -5,6 +5,7 @@ export const GET_PLACE_DETAIL = gql`
     place(id: $id) {
       id
       name
+      description
       location {
         country
         county
@@ -12,10 +13,9 @@ export const GET_PLACE_DETAIL = gql`
         street
       }
       coordinates {
-        latitude
-        longitude
+        lat
+        lon
       }
-      description
       ... on LocalBusiness {
         name
         photos {
@@ -29,15 +29,6 @@ export const GET_PLACE_DETAIL = gql`
         rating {
           value
           provider
-        }
-        isClosed
-        hours {
-          open {
-            dayOfWeek
-            end
-            start
-          }
-          isOpenNow
         }
         reviews {
           totalCount

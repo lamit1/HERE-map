@@ -12,6 +12,7 @@ const initialState = {
     duration: 0,
     length: 0,
     actions: [],
+    transportMode: "car"
   };
 
 export const DirectionResultProvider = ({children}) => {

@@ -1,6 +1,32 @@
 {
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "nodemon index.ts",
+    "downloader": "nodemon jsonDownloader/xml.ts",
+    "crawler": "nodemon crawler/crawler.ts",
+    "test-gemini": "nodemon crawler/geminiTest.ts",
+    "city-crawler": "nodemon crawler/cityCrawler.ts"
+  },
   "dependencies": {
-    "lodash": "^4.17.21",
-    "react-html-parser": "^2.0.2"
+    "@fastify/cors": "^9.0.1",
+    "@fastify/elasticsearch": "^3.1.0",
+    "@google/generative-ai": "^0.12.0",
+    "axios": "^1.6.8",
+    "dotenv": "^16.4.5",
+    "fastify": "^4.26.2",
+    "fastify-cors": "^6.1.0",
+    "graphql": "^16.8.1",
+    "mercurius": "^14.1.0",
+    "node-cache": "^5.1.2",
+    "redis": "^4.6.13",
+    "simple-xml-to-json": "^1.2.0",
+    "tsx": "^4.8.2"
+  },
+  "devDependencies": {
+    "@types/fastify-cors": "^2.1.0",
+    "@types/node": "^20.12.8",
+    "nodemon": "^3.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.3"
   }
 }

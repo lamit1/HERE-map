@@ -3,6 +3,7 @@ import { ContentCopy, Directions, Language, Share } from "@mui/icons-material";
 import { LinkGenarator } from "./linkGenerator";
 import { TAB } from "../../layout/SideBar";
 import { useDirectionSearch } from "../../layout/contexts/DirectionSearchContext";
+import { toast } from "react-toastify";
 
 const InformationCard = ({
   website,
@@ -15,15 +16,7 @@ const InformationCard = ({
   handleChangeTab,
   position
 }) => {
-  console.log(location);
-  const [linkCopied, setLinkCopied] = useState(false);
-  useEffect(() => {
-    if (linkCopied) {
-      setTimeout(() => {
-        setLinkCopied(false);
-      }, 5000);
-    }
-  }, [linkCopied]);
+  
   const {setDirectionSearch} = useDirectionSearch();
 
   return (
@@ -52,7 +45,7 @@ const InformationCard = ({
             navigator.clipboard.writeText(
               LinkGenarator.convertLocationToUrl(id, location?.country || location?.countryCode, title)
             );
-            setLinkCopied(true);
+            toast.success("Link copied!");
           }}
           className="flex flex-row border-l-2 hover:cursor-pointer hover:bg-primary hover:text-bg border-scaffold items-center flex-1 justify-center"
         >
@@ -60,12 +53,7 @@ const InformationCard = ({
           <div className="p-2 text-lg">Share</div>
         </div>
       </div>
-      {linkCopied && (
-        <div className="flex-auto gap-4 items-center flex flex-row text-lg bg-primary mt-2 justify-center p-2 rounded-2xl text-center text-pretty text-bg">
-          <ContentCopy />
-          <div className="">Link copied</div>
-        </div>
-      )}
+      
     </div>
   );
 };

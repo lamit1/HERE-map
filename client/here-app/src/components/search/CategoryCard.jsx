@@ -18,7 +18,7 @@ function CategoryCard(props) {
                     handleOnClickCateCard();
                 }}>
                 <Icon />
-                <div className={`${isHovered ? 'block' : 'hidden'} p-1 rounded-lg text-scaffold absolute top-full left-0 bg-bg border-2 border-scaffold line-clamp-1`}>
+                <div className={` mobile:hidden tablet:${isHovered ? 'block' : 'hidden'} p-1 rounded-lg text-scaffold absolute top-full left-0 bg-bg border-2 border-scaffold line-clamp-1`}>
                     {title}
                 </div>
             </button>

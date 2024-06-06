@@ -28,13 +28,14 @@ export const useLocationPicker = (
         )},${position.lng?.toPrecision(2)}`;
         let locationId = "unknown";
         let locationAddress = "";
+        let locationCountry = ""
         service?.browse(
           { at: `${position.lat},${position.lng}`, limit: 1 },
           function (res) {
             locationName = res?.items?.[0]?.title;
             locationId = res?.items?.[0]?.id;
             locationAddress = res?.items?.[0]?.address?.label;
-            locationCountry = res?.items?.[0]?.address?.label;
+            locationCountry = res?.items?.[0]?.address?.countryName || "";
             map?.removeObjects(map?.getObjects());
             if (locationType === "origin") {
               setSearch((prevSearch) => ({

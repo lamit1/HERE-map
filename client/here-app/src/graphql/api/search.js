@@ -16,6 +16,7 @@ export const fetchSearchMapQuest = async (
     }
 
     try {
+        console.log(lat,lng)
         // Construct the GraphQL query
         const graphqlQuery = {
             query: GET_SEARCH,
@@ -23,7 +24,7 @@ export const fetchSearchMapQuest = async (
         };
 
         // Make a fetch request to your GraphQL endpoint
-        const response = await fetch('https://graphql.aws.mapquest.com/', {
+        const response = await fetch('http://localhost:8080/graphql', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -33,6 +34,7 @@ export const fetchSearchMapQuest = async (
 
         // Parse the response JSON
         const responseData = await response.json();
+        console.log(responseData);
 
         // Check for errors in the response
         if (responseData.errors) {
@@ -40,18 +42,18 @@ export const fetchSearchMapQuest = async (
         }
 
         // Check if data is received from GraphQL
-        if (responseData.data && responseData.data.search.resultCount > 0) {
+        if (responseData.data && responseData.data.search?.length > 0) {
             const newItems = [];
             map?.removeObjects(map?.getObjects());
-            responseData.data.search.nodes?.forEach((item, index) => {
+            responseData.data.search?.forEach((item, index) => {
                 newItems.push({
                     id: item.id,
                     name: item.name,
                     type: "category",
                     address: `${item.location?.street || ""} ${item.location?.county || item.location?.locality || ""} ${item.location?.country || ""}`,
                     position: {
-                        lat: item.coordinates.latitude,
-                        lng: item.coordinates.longitude
+                        lat: item.coordinates.lat,
+                        lng: item.coordinates.lon
                     },
                     totalReviews: item?.reviews.totalCount,
                     website: item?.website,
@@ -66,8 +68,8 @@ export const fetchSearchMapQuest = async (
 
                 addBubbleInfoCategory(
                     map,
-                    item.coordinates.latitude,
-                    item.coordinates.longitude,
+                    item.coordinates.lat,
+                    item.coordinates.lon,
                     item.id,
                     item.name,
                     item?.photos?.primary?.url,

@@ -1,0 +1,84 @@
+type LocalBusiness {
+  id: String
+  name: String
+  website: String
+  rating: PlaceRating
+  price: PlacePriceLevel
+  location: Location
+  coordinates: Coordinates
+  photos: Photos
+  description: String
+  reviews: PlaceReviewConnection
+}
+
+type Coordinates {
+  lon: Float
+  lat: Float
+}
+
+type Location {
+  street: String
+  locality: String
+  county: String
+  country: String
+}
+
+type Photos {
+  primary: Photo
+  edges: [PhotoEdge]
+  totalCount: Int
+}
+
+type ReviewAuthor {
+  name: String,
+  picture: String
+}
+
+type Review {
+  author: ReviewAuthor
+  body: String
+  date: String
+  language: String
+  rating: Float
+  url: String
+  title: String
+}
+
+type PhotoEdge {
+  node: Photo
+}
+
+type Photo {
+  url: String
+  caption: String
+}
+
+type PlaceRating {
+  value: Float
+  provider: PlaceRatingProvider
+}
+
+type PlaceReviewConnection {
+  totalCount: Int
+  nodes: [Review]
+}
+
+enum PlaceRatingProvider {
+  PRICELINE
+  TRIPADVISOR
+  YELP
+}
+
+enum PlacePriceLevel {
+  FREE
+  INEXPENSIVE
+  MODERATE
+  EXPENSIVE
+  VERY_EXPENSIVE
+}
+
+type Query {
+    locality(latitude: Float, longitude: Float): LocalBusiness
+    place(id: ID): LocalBusiness
+    search(latitude: Float, longitude: Float, query: String, first: Int): [LocalBusiness]
+  }

@@ -11,7 +11,6 @@ import { LinkGenarator } from "../../detail/linkGenerator";
 
 const ResultSearchItem = ({ item }) => {
   const { map } = useContext(MapContext);
-  console.log(item)
   const { setDetailId, setSearch, search } = useContext(SearchBoxContext);
   const { setDestination } = useContext(DirectionContext);
   const handleOnClickResultSearch = (item) => {

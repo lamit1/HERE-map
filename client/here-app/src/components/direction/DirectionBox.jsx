@@ -5,6 +5,8 @@ import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import DirectionsBikeIcon from "@mui/icons-material/DirectionsBike";
 import DirectionIconButton from "./DirectionIcon";
 import LocationOn from "@mui/icons-material/LocationOn";
+import { ToastContainer, toast } from "react-toastify";
+
 import {
   LocationContext,
   MapContext,
@@ -16,6 +18,7 @@ import { InstructionModal } from "./instruction/InstructionBox";
 import SwapVertIcon from "@mui/icons-material/SwapVert";
 import {
   AccessTime,
+  ArrowBack,
   Close,
   CloseOutlined,
   EditLocation,
@@ -28,7 +31,9 @@ import { DirectionContext, TAB } from "../../layout/SideBar";
 import { useLocationPicker } from "../../hooks/useLocationPicker";
 import { useDirectionResult } from "../../layout/contexts/DirectionResultContext";
 import { useDirectionSearch } from "../../layout/contexts/DirectionSearchContext";
-
+import useURLParams from "../../hooks/useURLParams";
+import PrintPage from "../../layout/PrintPage";
+import { measure } from "../../utils/distanceMeasure";
 function DirectionBox(props) {
   const { handleChangeTab } = props;
   const originInputRef = useRef(null);
@@ -43,7 +48,7 @@ function DirectionBox(props) {
 
   const [locationType, setLocationType] = useState("");
   const [result, setResult] = useState(directionResult);
-
+  console.log(result);
   useLocationPicker(
     map,
     service,
@@ -51,6 +56,50 @@ function DirectionBox(props) {
     setLocationType,
     locationType
   );
+  const { params } = useURLParams();
+
+  useEffect(() => {
+    console.log(params);
+    if (
+      params?.origin &&
+      params?.destination &&
+      ["car", "truck", "bicyle", "pedestrian"].includes(params?.transportMode)
+    ) {
+      setDirectionSearch(prevSearch => ({...prevSearch, transportMode: params?.transportMode }));
+      service?.reverseGeocode(
+        {
+          at: params?.origin,
+        },
+        (response) => {
+          let title = response.items[0].address.label;
+          let position = response.items[0].access[0];
+          setDirectionSearch((prevSearch) => ({
+            ...prevSearch,
+            originName: title,
+            origin: `${position.lat},${position.lng}`,
+          }));
+        },
+        console.error
+      );
+      service?.reverseGeocode(
+        {
+          at: params?.destination,
+        },
+        (response) => {
+          let title = response.items[0].address.label;
+          let position = response.items[0].access[0];
+          setDirectionSearch((prevSearch) => ({
+            ...prevSearch,
+            destinationName: title,
+            destination: `${position.lat},${position.lng}`,
+          }));
+        },
+        console.error
+      );
+    } else {
+      setDirectionSearch(prevSearch => ({...prevSearch, transportMode: "car" }));
+    }
+  }, [params]);
 
   useEffect(() => {
     if (!directionSearch.origin) {
@@ -86,6 +135,7 @@ function DirectionBox(props) {
       }));
 
       setDirectionResult({
+        transportMode: directionSearch.transportMode,
         locations: {
           origin: directionSearch.originName,
           destination: directionSearch.destinationName,
@@ -108,9 +158,7 @@ function DirectionBox(props) {
         style: {
           strokeColor: "#695ee0",
           lineWidth: 6,
-          lineDash: [1, 2],
           lineJoin: "round",
-          lineDashOffset: 3,
         },
       });
 
@@ -152,6 +200,12 @@ function DirectionBox(props) {
       endMarker.setData({
         label: `Destination: ${directionSearch.destinationName}`,
       });
+
+      window.history.replaceState(
+        null,
+        null,
+        `/route-planer?origin=${directionSearch.origin}&destination=${directionSearch.destination}&transportMode=${directionSearch.transportMode}`
+      );
 
       // Create a group to hold all map objects
       const group = new H.map.Group();
@@ -210,10 +264,10 @@ function DirectionBox(props) {
       map.getViewModel().setLookAtData({
         bounds: group.getBoundingBox(),
       });
+    } else {
+      toast.error("Get route failed!");
     }
   };
-
-  console.log(directionSearch);
 
   // Create the parameters for the routing request:
   const routingParameters = {
@@ -248,7 +302,7 @@ function DirectionBox(props) {
     const days = Math.floor(milliseconds / (60 * 60 * 24));
     if (days > 0) return `${days} days, ${hours} hours`;
     if (days == 0 && hours > 0) {
-      return `${hours} hours, ${minutes} minutes`;
+      return `${hours} hrs, ${minutes} mins`;
     }
     if (minutes > 0) {
       return `${minutes} minutes`;
@@ -352,7 +406,7 @@ function DirectionBox(props) {
       service?.autosuggest(
         {
           q: value,
-          in: `circle:${userLocation.lat},${userLocation.lng};r=${100000}`,
+          at: `${userLocation.lat},${userLocation.lng}`,
           limit: 5,
         },
         function (searchResult) {
@@ -392,130 +446,143 @@ function DirectionBox(props) {
     }
   };
 
+  const handleBack = (e) => {
+    if (!document.referrer.startsWith(window.location.origin)) {
+      console.log(document.referrer);
+      history.replaceState(null, "", "/");
+    } else {
+      window.history.back();
+    }
+    handleChangeTab(TAB.SEARCH);
+    map?.removeObjects(map?.getObjects());
+    setDirectionSearch((prevSearch) => ({
+      ...prevSearch,
+      origin: "",
+      originId: "",
+      originName: "",
+      destinationId: "",
+      destinationName: "",
+      destination: "",
+      transportMode: "",
+    }));
+    setDirectionResult(null);
+  };
+
   return (
-    <div className=" h-full w-96 flex flex-col rounded-r-xl">
-      <div className="flex bg-primary ">
-        <div className="flex flex-auto p-4 border-2 border-scaffold justify-end items-center ">
-          <div
-            className="hover:cursor-pointer text-bg"
-            onClick={(e) => {
-              window.history.back();
-              handleChangeTab(TAB.SEARCH);
-              map?.removeObjects(map?.getObjects());
-              setDirectionSearch((prevSearch) => ({
-                ...prevSearch,
-                origin: "",
-                originId: "",
-                originName:  "",
-                destinationId: "",
-                destinationName: "",
-                destination: "",
-              }));
-              setDirectionResult();
-            }}
-          >
-            <CloseOutlined />
+    <>
+      <div className=" h-full flex flex-col rounded-r-xl w-full">
+        <div className=" mobile:hidden tablet:flex bg-primary ">
+          <div className="flex flex-auto p-4 border-2 border-scaffold justify-end items-center ">
+            <div className="hover:cursor-pointer text-bg" onClick={handleBack}>
+              <CloseOutlined />
+            </div>
           </div>
         </div>
-      </div>
-      {/* Transport method */}
-      <div className=" p-4 border-scaffold">
-        <div className="flex flex-row justify-between p-2">
-          <DirectionIconButton
-            transportMode="pedestrian"
-            IconComponent={DirectionsWalkIcon}
-            onClick={(event) => {
-              const mode = event.currentTarget.getAttribute("type");
-              setDirectionSearch((search) => ({
-                ...search,
-                transportMode:
-                  search.transportMode !== mode ? mode : search.transportMode,
-              }));
-            }}
-            selectedtransportMode={directionSearch.transportMode}
-          />
-          <DirectionIconButton
-            transportMode="car"
-            IconComponent={DirectionsCarFilledIcon}
-            onClick={(event) => {
-              const mode = event.currentTarget.getAttribute("type");
-              setDirectionSearch((search) => ({
-                ...search,
-                transportMode:
-                  search.transportMode !== mode ? mode : search.transportMode,
-              }));
-            }}
-            selectedtransportMode={directionSearch.transportMode}
-          />
-          <DirectionIconButton
-            transportMode="truck"
-            IconComponent={LocalShippingIcon}
-            onClick={(event) => {
-              const mode = event.currentTarget.getAttribute("type");
-              setDirectionSearch((search) => ({
-                ...search,
-                transportMode:
-                  search.transportMode !== mode ? mode : search.transportMode,
-              }));
-            }}
-            selectedtransportMode={directionSearch.transportMode}
-          />
-          <DirectionIconButton
-            transportMode="bicycle"
-            IconComponent={DirectionsBikeIcon}
-            onClick={(event) => {
-              const mode = event.currentTarget.getAttribute("type");
-              setDirectionSearch((search) => ({
-                ...search,
-                transportMode:
-                  search.transportMode !== mode ? mode : search.transportMode,
-              }));
-            }}
-            selectedtransportMode={directionSearch.transportMode}
-          />
+        <div
+          className="tablet:hidden size-4 hover:cursor-pointer"
+          onClick={handleBack}
+        >
+          <ArrowBack />
         </div>
-        <div className="flex flex-row  mt-4">
-          <div className="flex gap-2 flex-col">
-            {/* Search Input */}
-            <div className="flex flex-row">
-              <div className=" items-center p-2 text-green">
-                <TripOrigin />
-              </div>
-              <div className="w-64 overflow-hidden border-2 flex flex-row items-center rounded-full border-scaffold">
-                <input
-                  ref={originInputRef}
-                  value={directionSearch.originName}
-                  onFocus={(e) => {
-                    handleOnFocus(e.target.value, "origin");
-                  }}
-                  onChange={(e) => {
-                    handleOnChange(e.target.value);
-                  }}
-                  onBlur={(e) => {
-                    handleOnBlur();
-                  }}
-                  className=" text-pretty w-40 text-base focus:outline-none m-0 pl-4 py-0 rounded-full bg-bg  flex-auto"
-                  placeholder="Start point..."
-                />
-                {directionSearch?.originName?.length > 0 && (
-                  <div
-                    onClick={() => {
-                      setDirectionSearch((prevSearch) => ({
-                        ...prevSearch,
-                        originName: "",
-                        originId: "",
-                        origin: "",
-                      }));
-                      setResult(null);
-                      map?.removeObjects(map?.getObjects());
+        {/* Transport method */}
+        <div className=" p-4 border-scaffold border-b-2">
+          <div className="flex flex-row justify-between p-2">
+            <DirectionIconButton
+              transportMode="car"
+              IconComponent={DirectionsCarFilledIcon}
+              onClick={(event) => {
+                const mode = event.currentTarget.getAttribute("type");
+                setDirectionSearch((search) => ({
+                  ...search,
+                  transportMode:
+                    search.transportMode !== mode ? mode : search.transportMode,
+                }));
+              }}
+              selectedtransportMode={directionSearch.transportMode}
+            />
+            <DirectionIconButton
+              transportMode="pedestrian"
+              IconComponent={DirectionsWalkIcon}
+              onClick={(event) => {
+                const mode = event.currentTarget.getAttribute("type");
+                setDirectionSearch((search) => ({
+                  ...search,
+                  transportMode:
+                    search.transportMode !== mode ? mode : search.transportMode,
+                }));
+              }}
+              selectedtransportMode={directionSearch.transportMode}
+            />
+
+            <DirectionIconButton
+              transportMode="truck"
+              IconComponent={LocalShippingIcon}
+              onClick={(event) => {
+                const mode = event.currentTarget.getAttribute("type");
+                setDirectionSearch((search) => ({
+                  ...search,
+                  transportMode:
+                    search.transportMode !== mode ? mode : search.transportMode,
+                }));
+              }}
+              selectedtransportMode={directionSearch.transportMode}
+            />
+            <DirectionIconButton
+              transportMode="bicycle"
+              IconComponent={DirectionsBikeIcon}
+              onClick={(event) => {
+                const mode = event.currentTarget.getAttribute("type");
+                setDirectionSearch((search) => ({
+                  ...search,
+                  transportMode:
+                    search.transportMode !== mode ? mode : search.transportMode,
+                }));
+              }}
+              selectedtransportMode={directionSearch.transportMode}
+            />
+          </div>
+          <div className="flex flex-row  mt-4">
+            <div className="flex gap-2 flex-col flex-auto">
+              {/* Search Input */}
+              <div className="flex flex-row">
+                <div className=" items-center p-2 text-green">
+                  <TripOrigin />
+                </div>
+                <div className="w-64 overflow-hidden flex-auto border-2 flex flex-row items-center rounded-full border-scaffold">
+                  <input
+                    ref={originInputRef}
+                    value={directionSearch.originName}
+                    onFocus={(e) => {
+                      handleOnFocus(e.target.value, "origin");
                     }}
-                    className=" hover:cursor-pointer size-10 hover:bg-scaffold flex items-center justify-center"
-                  >
-                    <Close />
-                  </div>
-                )}
-                <div
-                  className={`
+                    onChange={(e) => {
+                      handleOnChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      handleOnBlur();
+                    }}
+                    className=" text-pretty w-40 text-base focus:outline-none m-0 pl-4 py-0 rounded-full bg-bg  flex-auto"
+                    placeholder="Start point..."
+                  />
+                  {directionSearch?.originName?.length > 0 && (
+                    <div
+                      onClick={() => {
+                        setDirectionSearch((prevSearch) => ({
+                          ...prevSearch,
+                          originName: "",
+                          originId: "",
+                          origin: "",
+                        }));
+                        setResult(null);
+                        map?.removeObjects(map?.getObjects());
+                      }}
+                      className=" hover:cursor-pointer size-10 hover:bg-scaffold flex items-center justify-center"
+                    >
+                      <Close />
+                    </div>
+                  )}
+                  <div
+                    className={`
                    hover:cursor-pointer
                     size-10 
                     flex
@@ -527,54 +594,54 @@ function DirectionBox(props) {
                             ? "bg-primary text-bg"
                             : "bg-bg hover:bg-scaffold text-green"
                         } `}
-                  onClick={() => {
-                    setLocationType("origin");
-                  }}
-                >
-                  <EditLocation />
+                    onClick={() => {
+                      setLocationType("origin");
+                    }}
+                  >
+                    <EditLocation />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="flex flex-row">
-              <div className="  items-center p-2 text-red">
-                <LocationOn />
-              </div>
-              <div className="w-64 border-2 overflow-hidden flex flex-row items-center rounded-full border-scaffold">
-                <input
-                  ref={destinationInputRef}
-                  value={directionSearch.destinationName}
-                  onFocus={(e) => {
-                    handleOnFocus(e.target.value, "destination");
-                  }}
-                  onChange={(e) => {
-                    handleOnChange(e.target.value);
-                  }}
-                  onBlur={(e) => {
-                    handleOnBlur();
-                  }}
-                  className="w-40 border-scaffold text-pretty text-base focus:outline-none m-0  px-4 py-0 rounded-full bg-bg flex-auto"
-                  placeholder="Destination..."
-                />
-                {directionSearch?.destinationName?.length > 0 && (
-                  <div
-                    onClick={() => {
-                      map?.removeObjects(map?.getObjects());
-                      setDirectionSearch((prevSearch) => ({
-                        ...prevSearch,
-                        destinationName: "",
-                        destinationId: "",
-                        destination: "",
-                      }));
-                      setResult(null);
+              <div className="flex flex-row">
+                <div className="  items-center p-2 text-red">
+                  <LocationOn />
+                </div>
+                <div className="w-64 flex-auto border-2 overflow-hidden flex flex-row items-center rounded-full border-scaffold">
+                  <input
+                    ref={destinationInputRef}
+                    value={directionSearch.destinationName}
+                    onFocus={(e) => {
+                      handleOnFocus(e.target.value, "destination");
                     }}
-                    className=" hover:cursor-pointer hover:bg-scaffold flex items-center justify-center size-10"
-                  >
-                    <Close />
-                  </div>
-                )}
-                <div
-                  className={`
+                    onChange={(e) => {
+                      handleOnChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      handleOnBlur();
+                    }}
+                    className="w-40 border-scaffold text-pretty text-base focus:outline-none m-0  px-4 py-0 rounded-full bg-bg flex-auto"
+                    placeholder="Destination..."
+                  />
+                  {directionSearch?.destinationName?.length > 0 && (
+                    <div
+                      onClick={() => {
+                        map?.removeObjects(map?.getObjects());
+                        setDirectionSearch((prevSearch) => ({
+                          ...prevSearch,
+                          destinationName: "",
+                          destinationId: "",
+                          destination: "",
+                        }));
+                        setResult(null);
+                      }}
+                      className=" hover:cursor-pointer hover:bg-scaffold flex items-center justify-center size-10"
+                    >
+                      <Close />
+                    </div>
+                  )}
+                  <div
+                    className={`
                  hover:cursor-pointer
                    flex justify-center
                     items-center
@@ -585,138 +652,147 @@ function DirectionBox(props) {
                           ? "bg-primary text-bg"
                           : "bg-bg hover:bg-scaffold text-red"
                       }`}
-                  onClick={() => {
-                    setLocationType("destination");
-                  }}
-                >
-                  <EditLocation />
+                    onClick={() => {
+                      setLocationType("destination");
+                    }}
+                  >
+                    <EditLocation />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div className="flex flex-row items-center flex-auto justify-center">
-            <div
-              className="hover:cursor-pointer hover:bg-scaffold w-8 h-8 flex justify-center items-center hover:bg-black rounded-lg"
-              onClick={handleSwap}
-            >
-              <SwapVertIcon />
+            <div className=" ml-4 flex flex-row items-center size-auto justify-center">
+              <div
+                className="hover:cursor-pointer hover:bg-scaffold w-8 h-8 flex justify-center items-center hover:bg-black rounded-lg"
+                onClick={handleSwap}
+              >
+                <SwapVertIcon />
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div className="w-full h-0.5 bg-scaffold shadow-2xl"></div>
-      {/* Search direction input result */}
-      {(directionSearch.onFocus == "origin" ||
-        directionSearch.onFocus == "destination") && (
-        <div className="flex flex-col mt-2 max-w-96 min-w-96">
-          <div
-            onMouseDown={() => handleOnClickYourLocation()}
-            className="flex flex-row  flex-auto hover:bg-primary hover:text-bg "
-          >
-            <div className="p-4 hover:cursor-pointer flex-auto flex flex-row">
-              <div className="text-green">
-                <MyLocation />
-              </div>
-              <div className=" line-clamp-1 ml-4 text-pretty">
-                Current position
+        {/* Search direction input result */}
+        {(directionSearch.onFocus == "origin" ||
+          directionSearch.onFocus == "destination") && (
+          <div className="flex flex-col mt-2 mobile:w-full mobile:overflow-auto tablet:overflow-hidden  ">
+            <div
+              onMouseDown={() => handleOnClickYourLocation()}
+              className="flex flex-row  flex-auto hover:bg-primary hover:text-bg "
+            >
+              <div className="p-4 hover:cursor-pointer flex-auto flex flex-row">
+                <div className="text-green">
+                  <MyLocation />
+                </div>
+                <div className=" line-clamp-1 ml-4 text-pretty text-md font-bold">
+                  Current position
+                </div>
               </div>
             </div>
-          </div>
 
-          {directionSearch.result.length != 0
-            ? directionSearch.result.map(
-                (item, index) =>
-                  item?.access?.[0] && (
+            {directionSearch.result && directionSearch.result?.length != 0
+              ? directionSearch.result.map(
+                  (item, index) =>
+                    item?.access?.[0] && (
+                      <div
+                        key={index}
+                        onMouseDown={() => {
+                          handleOnClick(
+                            item?.id,
+                            {
+                              lat: item?.access?.[0]?.lat,
+                              lng: item?.access?.[0]?.lng,
+                            },
+                            item.title
+                          );
+                        }}
+                        className="flex flex-row"
+                      >
+                        <div className="p-4 items-center hover:bg-primary hover:text-bg hover:cursor-pointer flex flex-row flex-auto ">
+                          <div className=" text-red">
+                            <LocationOn />
+                          </div>
+                          <div className="flex flex-col">
+                            <div className=" line-clamp-1 ml-4 overflow-clip font-bold text-md">
+                              {item.title}
+                            </div>
+                            <div className=" line-clamp-1 ml-4 overflow-clip text-sm">
+                              {item?.address?.label}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                )
+              : directionSearch.historyResult
+                  ?.reverse()
+                  .slice(0, 5)
+                  .map((item, index) => (
                     <div
                       key={index}
-                      onMouseDown={() => {
-                        handleOnClick(
-                          item?.id,
-                          {
-                            lat: item?.access?.[0]?.lat,
-                            lng: item?.access?.[0]?.lng,
-                          },
-                          item.title
-                        );
-                      }}
-                      className="flex flex-row"
+                      onMouseDown={() =>
+                        handleOnClick(item?.id, item.position, item.name)
+                      }
+                      className="flex flex-col mt-2 "
                     >
-                      <div className="p-4 hover:bg-primary hover:text-bg hover:cursor-pointer flex flex-row flex-auto max-w-96 min-w-96">
-                        <div className=" text-red">
-                          <LocationOn />
-                        </div>
-                        <div className=" line-clamp-1 ml-4 overflow-clip">
-                          {item.title}
-                        </div>
-                      </div>
-                    </div>
-                  )
-              )
-            : directionSearch.historyResult
-                ?.reverse()
-                .slice(0, 5)
-                .map((item, index) => (
-                  <div
-                    key={index}
-                    onMouseDown={() =>
-                      handleOnClick(item?.id, item.position, item.name)
-                    }
-                    className="flex flex-col mt-2 max-w-96 min-w-96"
-                  >
-                    <div className="flex flex-row">
-                      <div className="p-4 hover:bg-primary hover:text-bg hover:cursor-pointer flex flex-row flex-auto max-w-96 min-w-96">
-                        <div className="text-yellow">
-                          <History />
-                        </div>
-                        <div className=" line-clamp-1 ml-4 overflow-clip">
-                          {item.name}
+                      <div className="flex flex-row">
+                        <div className="p-4 hover:bg-primary border-scaffold hover:text-bg hover:cursor-pointer items-center flex flex-row flex-auto ">
+                          <div className="text-yellow">
+                            <History />
+                          </div>
+                          <div className="flex flex-col">
+                            <div className=" line-clamp-1 ml-4 overflow-clip font-bold text-md">
+                              {item.name}
+                            </div>
+                            <div className=" line-clamp-1 ml-4 overflow-clip text-sm">
+                              {item.address}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-        </div>
-      )}
-      {/* Calculate Direction Result */}
-      {directionSearch.origin != "" &&
-      directionSearch.destination != "" &&
-      directionResult?.actions?.length != 0 &&
-      directionSearch.onFocus == "" ? (
-        <div className="max-h-full overflow-y-auto overflow-x-hidden">
-          <div className="max-w-96 min-w-96">
-            <div className="flex flex-row">
-              <div className="flex flex-col flex-auto">
-                <div className="flex flex-row border-b-2 border-scaffold">
-                  <div className="flex flex-row flex-1 p-2 justify-start">
-                    <div className="text-primary  ">
-                      <StraightenOutlined fontSize="large" />
+                  ))}
+          </div>
+        )}
+        {/* Calculate Direction Result */}
+        {directionSearch.origin != "" &&
+        directionSearch.destination != "" &&
+        directionResult?.actions?.length != 0 &&
+        directionSearch.onFocus === "" ? (
+          <div className="max-h-full overflow-y-auto overflow-x-hidden">
+            <div className="">
+              <div className="flex flex-row">
+                <div className="flex flex-col flex-auto">
+                  <div className="flex flex-row border-b-2 border-scaffold">
+                    <div className="flex flex-row flex-1 p-2 justify-start">
+                      <div className="text-primary justify-center flex items-center">
+                        <StraightenOutlined fontSize="large" />
+                      </div>
+                      <div className="flex-auto text-lg flex justify-center items-center">
+                        {measure.meterToMiles(directionResult?.length) > 0.25
+                          ? `${measure.meterToMiles(directionResult?.length)} miles`
+                          : `${measure.meterToFeets(directionResult?.length)} feets`}
+                      </div>
                     </div>
-                    <div className="flex-auto text-lg flex justify-center items-center">
-                      {directionResult?.length > 1000
-                        ? `${(directionResult?.length / 1000).toPrecision(
-                            2
-                          )} km`
-                        : `${directionResult?.length} m`}
-                    </div>
-                  </div>
-                  <div className="flex flex-row p-2 flex-1 items-center justify-start border-l-2 border-scaffold">
-                    <div className="text-yellow">
-                      <AccessTime fontSize="large" />
-                    </div>
-                    <div className="flex-auto text-lg flex justify-center items-center">
-                      {formatTimeDifference(result.duration)}
+                    <div className="flex flex-row p-2 flex-1 items-center justify-start border-l-2 border-scaffold">
+                      <div className="text-yellow justify-center items-center">
+                        <AccessTime fontSize="large" />
+                      </div>
+                      <div
+                        aria-label={formatTimeDifference(result?.duration)}
+                        className="flex-auto text-md flex justify-center items-center line-clamp-1 overflow-auto"
+                      >
+                        {formatTimeDifference(result?.duration)}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            {directionResult?.length !== null && (
               <InstructionModal instructions={directionResult?.actions} />
-            )}
+            </div>
           </div>
-        </div>
-      ) : null}
-    </div>
+        ) : null}
+      </div>
+    </>
   );
 }
 

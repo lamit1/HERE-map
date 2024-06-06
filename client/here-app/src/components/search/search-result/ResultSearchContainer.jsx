@@ -5,7 +5,7 @@ import { usePageResult } from "../../../layout/contexts/PageResultContext";
 const ResultSearchContainer = ({ items, handleChangeTab }) => {
   const {page} = usePageResult();
   return (
-    <div className="flex-1 min-h-24">
+    <div className="flex-1 min-h-24 overflow-auto">
       {items?.slice(page?.index*15, (page?.index+1)*15).map((item, index) => {
         if (item.type === "location")
           return (

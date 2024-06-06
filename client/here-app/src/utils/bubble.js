@@ -154,6 +154,7 @@ export const addBubbleLabel = (
   name,
   country
 ) => {
+  console.log(position);
   const marker = new H.map.Marker(position, {
     icon: new H.map.Icon("/assets/endmarker.svg", { size: { w: 24, h: 24 } }),
   });

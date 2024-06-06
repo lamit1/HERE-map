@@ -27,7 +27,7 @@ const GalleryCard = ({ images = [] }) => {
               isOpen: false,
             });
           }}
-          className="w-full h-full flex flex-row justify-around items-center"
+          className="w-full h-full flex flex-row justify-center items-center"
         >
           {imageIndex > 0 && (
             <div
@@ -37,7 +37,7 @@ const GalleryCard = ({ images = [] }) => {
                   prevIndex - 1 >= 0 ? prevIndex - 1 : 0
                 );
               }}
-              className="bg-scaffold rounded-full size-12 hover:cursor-pointer  flex justify-center items-center"
+              className="bg-scaffold rounded-full size-12 hover:cursor-pointer flex justify-center items-center mr-40"
             >
               <ArrowBack />
             </div>
@@ -56,7 +56,7 @@ const GalleryCard = ({ images = [] }) => {
                   prevIndex + 1 <= images.length ? prevIndex + 1 : images.length
                 );
               }}
-              className="bg-scaffold rounded-full size-12 hover:cursor-pointer flex justify-center items-center"
+              className="bg-scaffold rounded-full size-12 hover:cursor-pointer flex justify-center items-center ml-40"
             >
               <ArrowForward />
             </div>

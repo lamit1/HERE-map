@@ -54,7 +54,6 @@ function SearchBox(props) {
     searchResults?.keyword,
     service
   );
-  console.log(path, params);
 
   const searchCategory = async (category) => {
     const categoryResults = await fetchSearchMapQuest(
@@ -67,6 +66,7 @@ function SearchBox(props) {
       setSearchResults,
       handleChangeTab
     );
+    
     setSearchResults({ keyword: category, items: categoryResults });
     setPage((prevPage) => ({
       index: 0,
@@ -138,7 +138,7 @@ function SearchBox(props) {
         setDetailId: setDetailId,
       }}
     >
-      <div className="flex flex-col relative w-full">
+      <div className="flex flex-col relative w-full h-full overflow-auto">
         {detailId != "" || info?.id != null ? (
           <DetailContainer
             id={detailId || info?.id}
@@ -150,9 +150,9 @@ function SearchBox(props) {
               handleChangeTab={handleChangeTab}
               setIsFocused={setIsFocused}
             />
-            <div className="flex flex-col overflow-y-auto overflow-x-hidden flex-auto">
+            <div className="flex flex-col  overflow-y-auto overflow-x-hidden flex-auto">
               {/* Category Item */}
-              <div className="flex flex-row justify-around max-w-96 border-b-2 border-scaffold">
+              <div className=" flex flex-row justify-around w-full border-b-2 border-scaffold">
                 <CategoryCard
                   title={"Hotel"}
                   search={searchCategory}

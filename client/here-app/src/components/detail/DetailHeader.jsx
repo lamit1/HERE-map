@@ -6,7 +6,7 @@ import RatingCard from "./RatingCard";
 const DetailHeader = ({ name, address, website, value, totalCount }) => {
   return (
     <div>
-      <div className="flex flex-row">
+      <div className="flex flex-row justify-between">
         <div className="flex-1 text-2xl font-bold max-w-72">{name}</div>
         <RatingCard value={value} totalCount={totalCount} />
       </div>

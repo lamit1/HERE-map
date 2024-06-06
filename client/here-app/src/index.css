@@ -1,6 +1,6 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -16,17 +16,6 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
 
 .H_ib_body {
   padding: 1rem;
@@ -64,18 +53,6 @@ h1 {
   line-height: 1.1;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-
 button:hover {
   border-color: #646cff;
 }
@@ -85,7 +62,6 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-
 /* width */
 ::-webkit-scrollbar {
   width: 0.5rem;
@@ -94,9 +70,8 @@ button:focus-visible {
 /* Track */
 ::-webkit-scrollbar-track {
   box-shadow: inset 0 0 5px grey;
-
 }
- 
+
 /* Handle */
 ::-webkit-scrollbar-thumb {
   background: #646cff;
@@ -122,4 +97,81 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+@media print {
+  .divider {
+    break-before: page;
+  }
+  .no-print {
+    display: none !important;
+  }
+  html,
+  body {
+    height: auto;
+  }
+}
+
+.hide-scrollbar::-webkit-scrollbar-thumb {
+  background: #646cff;
+  border-radius: 10rem; /* Customize scrollbar thumb color */
+}
+
+.hide-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #747bff;
+  cursor: pointer; /* Customize scrollbar thumb hover color */
+}
+
+@media (min-width: 375px) {
+  /* Base styles to hide the scrollbar */
+  .hide-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, and Edge */
+  }
+}
+
+/* Media query to show the scrollbar on tablet and larger screens */
+@media (min-width: 768px) {
+  .hide-scrollbar {
+    -ms-overflow-style: auto; /* IE and Edge */
+    scrollbar-width: thin; /* Firefox, you can specify a value here */
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: block; /* Chrome, Safari, and Edge */
+    width: 0.5rem; /* Adjust the width as needed */
+  }
+
+  .hide-scrollbar::-webkit-scrollbar-thumb {
+    background: #646cff;
+    border-radius: 10rem; /* Customize scrollbar thumb color */
+  }
+
+  .hide-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #747bff;
+    cursor: pointer; /* Customize scrollbar thumb hover color */
+  }
+}
+
+.a4 {
+  width: 210mm;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.page-content {
+  width: 80%;
+  /* Adjust the width as needed */
+  /* Adjust the height as needed*/
+  padding: 20px;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  /* Light gray shade */
 }

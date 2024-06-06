@@ -22,9 +22,8 @@ export function useSearchLocation(map,lat, lng, query, service) {
                     query: GET_SEARCH,
                     variables: { latitude: lat, longitude: lng, query: query, first: 5 }
                 };
-
                 // Make a fetch request to your GraphQL endpoint
-                const response = await fetch('https://graphql.aws.mapquest.com/', {
+                const response = await fetch('http://localhost:8080/graphql', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -34,7 +33,7 @@ export function useSearchLocation(map,lat, lng, query, service) {
 
                 // Parse the response JSON
                 const responseData = await response.json();
-
+                console.log(responseData);
 
                 // Check for errors in the response
                 if (responseData.errors) {
@@ -42,18 +41,17 @@ export function useSearchLocation(map,lat, lng, query, service) {
                 }
 
                 // Check if data is received from GraphQL
-                if (responseData.data && responseData.data.search.resultCount > 0) {
+                if (responseData.data?.search != null && responseData.data?.search?.length > 0 ) {
                     const newItems = [];
-                    responseData.data.search.nodes?.forEach(item => {
-                        console.log(item.location?.country)
+                    responseData.data.search?.forEach(item => {
                         newItems.push({
                             id: item.id,
                             type: "category",
                             name: item.name,
                             address: `${item.location?.street || ""} ${item.location?.county || item.location?.locality || ""} ${item.location?.country || ""}`,
                             position: {
-                                lat: item.coordinates.latitude,
-                                lng: item.coordinates.longitude
+                                lat: item.coordinates.lat,
+                                lng: item.coordinates.lon
                             },
                             country: item.location?.country,
                             totalReviews: item?.reviews.totalCount,

@@ -31,7 +31,7 @@ const SearchInput = ({ handleChangeTab, setIsFocused }) => {
 
 
   return (
-    <div className="flex flex-row border-b-2 border-scaffold p-4  focus:border-primary bg-primary">
+    <div className="flex flex-row border-scaffold border-b-2 tablet:border-scaffold p-4  focus:border-primary tablet:bg-primary mobile:bg-none">
       <input
         value={searchResults?.keyword}
         onFocus={() => setIsFocused(true)}
@@ -46,14 +46,14 @@ const SearchInput = ({ handleChangeTab, setIsFocused }) => {
           if(e.target.value === "" ) setPage({index:0, maxPage: 0})
         }}
         placeholder="Type to search ..."
-        className=" placeholder-bg text-pretty text-lg text-bg flex-auto bg-primary outline-none "
+        className=" placeholder-text tablet:placeholder-bg text-pretty text-lg text-text tablet:text-bg flex-auto bg-bg tablet:bg-primary outline-none "
       />
       {searchResults?.keyword != "" && (
         <div
           onClick={() => {
             handleClear();
           }}
-          className="flex text-bg flex-1 px-2 justify-center items-center  hover:cursor-pointer"
+          className="flex text-scaffold tablet:text-bg flex-1 px-2 justify-center items-center  hover:cursor-pointer"
         >
           <Close />
         </div>
@@ -64,11 +64,9 @@ const SearchInput = ({ handleChangeTab, setIsFocused }) => {
           map?.removeObjects(map?.getObjects());
           handleChangeTab(TAB.DIRECTION);
         }}
-        className="flex-1 flex  text-bg  justify-center px-2 items-center hover:cursor-pointer"
+        className="flex-1 tablet:flex mobile:hidden text-bg  justify-center px-2 items-center hover:cursor-pointer"
       >
-        <div className="">
           <Directions />
-        </div>
       </div>
     </div>
   );
