@@ -20,13 +20,17 @@ function App() {
   });
   const apiKey = import.meta.env.VITE_API_KEY;
 
+  const { path, params } = useURLParams();
 
   return (
     <>
       <ToastContainer />
       <ApolloProvider client={client}>
-        {/* <HEREMap apikey={apiKey} /> */}
-        <ArticleScreen/>
+        {path.startsWith("/article") ? (
+          <ArticleScreen />
+        ) : (
+          <HEREMap apikey={apiKey} />
+        )}
       </ApolloProvider>
     </>
   );

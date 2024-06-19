@@ -23,6 +23,7 @@ import { configDotenv } from "dotenv";
 //   });
 // } else {
 const server = fastify();
+
 configDotenv();
 
 
@@ -101,7 +102,7 @@ const recursiveQuery = async (
     console.log(index);
     // Get existed id in batch items
     const notExistedAndUpdateItems =
-      await elasticsearchService.checkExistedItems(
+      await elasticsearchService.checkExistedLocations(
         server,
         fileDataItems.slice(index, index + batchSize)
       );
@@ -157,7 +158,7 @@ const recursiveQuery = async (
       });
 
     // Insert doc
-    await elasticsearchService.insertDocs(server, timestampDocs);
+    await elasticsearchService.insertLocations(server, timestampDocs);
 
     // Call the next query
     await recursiveQuery(server, fileDataItems, index + batchSize, batchSize);

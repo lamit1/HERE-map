@@ -8,17 +8,7 @@ import elasticsearch from "@fastify/elasticsearch";
 
 configDotenv();
 
-const getCities = async (startIndex: number, batchSize: number) => {
-  return await AxiosCustomInstance.getInstance().get(
-    `${envConfig.BACK4APP_URL}?skip=${startIndex}&limit=${batchSize}&keys=name`,
-    {
-      headers: {
-        "X-Parse-Application-Id": envConfig.BACK4APP_APP_ID,
-        "X-Parse-REST-API-Key": envConfig.BACK4APP_API_KEY,
-      },
-    }
-  );
-};
+
 
 const states = [
   "Alabama",
@@ -108,12 +98,6 @@ const top10LocationsPrompt = (stateName: string) =>
     }
     `;
 
-const initCities = async () => {
-  for (let i = 0; i <= 17; i++) {
-    const res = await getCities(i * 1000, 1000);
-    cities.push(res.data.results);
-  }
-};
 
 const run = async () => {
   googleGemini.init();

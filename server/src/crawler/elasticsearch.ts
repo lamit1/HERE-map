@@ -60,8 +60,9 @@ export const elasticsearchService = {
   /** 
   @param: server|FasitfyInstance, id:number
   @return return the if of documents that arent not in ES or havent been updated by timestamp
+  @description
   */
-  checkExistedItems: async (
+  checkExistedLocations: async (
     server: FastifyInstance,
     batchItems: DataItem[]
   ) => {
@@ -130,7 +131,7 @@ export const elasticsearchService = {
     return [];
   },
 
-  insertDocs: async (server: FastifyInstance, documents: any[]) => {
+  insertLocations: async (server: FastifyInstance, documents: any[]) => {
     try {
       // console.log("Before insert docs: " + JSON.stringify(documents));
       if (documents.length > 0) {

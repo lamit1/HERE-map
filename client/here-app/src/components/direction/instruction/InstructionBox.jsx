@@ -30,8 +30,6 @@ export const InstructionModal = ({ instructions, handleChangeTab }) => {
               className="bg-transparent flex-1  flex items-center justify-center font-bold hover:bg-primary hover:text-bg hover:cursor-pointer"
             >
               🖨️ Print
-              {/* <DownloadLink list={mapper.instructionToText(instructions)}>
-              </DownloadLink> */}
             </div>
             <div className="h-full w-0.5 bg-scaffold"></div>
             <div

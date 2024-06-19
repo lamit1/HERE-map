@@ -158,7 +158,7 @@ const SideBar = () => {
         </PageResultProvider>
         <div
           onClick={handlePressClose}
-          className=" mobile:hidden tablet:flex absolute top-1/2 flex left-full w-8 h-12 resize-x shadow-2xl border-scaffold border-2 rounded-e-3xl hover:bg-scaffold hover:cursor-pointer bg-bg"
+          className=" mobile:hidden tablet:flex absolute top-1/2 flex left-full w-8 h-12 resize-x shadow-2xl rounded-e-3xl hover:bg-scaffold hover:cursor-pointer bg-bg"
         >
           {isClose ? (
             <div className="  flex items-center flex-auto">
