@@ -2,19 +2,19 @@
 
 # Tech stack:
 - FE: 
-    + TailwindCSS: [text](https://mui.com/)
-    + React: [text](https://react.dev/)
-    + MUI: [text](https://tailwindcss.com/)
-    + Vite: [text](https://vitejs.dev/)
+    + TailwindCSS: [Link](https://mui.com/)
+    + React: [Link](https://react.dev/)
+    + MUI: [Link](https://tailwindcss.com/)
+    + Vite: [Link](https://vitejs.dev/)
 - BE: 
-    + NodeJS + TypeScript: [text](https://nodejs.org/en)
-    + Fastify: [text](https://fastify.dev/)
+    + NodeJS + TypeScript: [Link](https://nodejs.org/en)
+    + Fastify: [Link](https://fastify.dev/)
 - Related links: 
-    + Here api: [text](https://developer.here.com/develop/javascript-api)
-    + Mapquest graphql api: [text](https://graphql.aws.mapquest.com/)
-    + Mapquest location crawl url: [text](https://www.mapquest.com/sitemap.xml)
-    + Google studio AI: [text](https://aistudio.google.com/)
-    + Kibana: [text](https://www.elastic.co/kibana) (For testng with elasticsearch)
+    + Here api: [Link](https://developer.here.com/develop/javascript-api)
+    + Mapquest graphql api: [Link](https://graphql.aws.mapquest.com/)
+    + Mapquest location crawl url: [Link](https://www.mapquest.com/sitemap.xml)
+    + Google studio AI: [Link](https://aistudio.google.com/)
+    + Kibana: [Link](https://www.elastic.co/kibana) (For testng with elasticsearch)
 # Stack Version:
 - Elasticsearch: 18.2.2
 - Nodejs: 21.7.3
