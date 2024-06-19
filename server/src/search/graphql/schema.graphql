@@ -78,7 +78,37 @@ enum PlacePriceLevel {
 }
 
 type Query {
-    locality(latitude: Float, longitude: Float): LocalBusiness
-    place(id: ID): LocalBusiness
-    search(latitude: Float, longitude: Float, query: String, first: Int): [LocalBusiness]
-  }
+  locality(latitude: Float, longitude: Float): LocalBusiness
+  place(id: ID): LocalBusiness
+  search(latitude: Float, longitude: Float, query: String, first: Int): [LocalBusiness]
+  article(stateName: String): Article
+}
+
+type Article {
+  stateName: String
+  postalAbbreviations: String
+  locations: [LocationInfo]
+}
+
+type LocationInfo {
+  images: [String]
+  title: String
+  description: String
+  rating: LocationRating
+  link: LocationLink
+  positions: LocationCoordinates
+}
+
+type LocationRating {
+  value: Float
+  provider: String
+}
+
+type LocationLink {
+  url: String
+}
+
+type LocationCoordinates {
+  latitude: Float
+  longitude: Float
+}

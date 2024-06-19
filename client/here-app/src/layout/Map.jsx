@@ -169,7 +169,6 @@ function HEREMap({ apikey }) {
         </MapContext.Provider>
       </SearchContext.Provider>
       <div className=" w-screen h-screen" ref={mapRef} />
-
     </div>
   );
 }

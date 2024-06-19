@@ -11,6 +11,7 @@ import { ToastContainer } from "react-toastify";
 import useURLParams from "./hooks/useURLParams";
 import { InstructionsProvider } from "./layout/contexts/InstructionsContext";
 import PrintPage from "./layout/PrintPage";
+import ArticleScreen from "./components/article/ArticleScreen";
 
 function App() {
   const client = new ApolloClient({
@@ -24,7 +25,8 @@ function App() {
     <>
       <ToastContainer />
       <ApolloProvider client={client}>
-        <HEREMap apikey={apiKey} />
+        {/* <HEREMap apikey={apiKey} /> */}
+        <ArticleScreen/>
       </ApolloProvider>
     </>
   );

@@ -2,9 +2,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "nodemon index.ts",
-    "downloader": "nodemon jsonDownloader/xml.ts",
+    "downloader": "tsx jsonDownloader/xml.ts",
     "crawler": "nodemon crawler/crawler.ts",
-    "test-gemini": "nodemon crawler/geminiTest.ts",
     "city-crawler": "nodemon crawler/cityCrawler.ts"
   },
   "dependencies": {
@@ -19,14 +18,14 @@
     "mercurius": "^14.1.0",
     "node-cache": "^5.1.2",
     "redis": "^4.6.13",
-    "simple-xml-to-json": "^1.2.0",
-    "tsx": "^4.8.2"
+    "simple-xml-to-json": "^1.2.0"
   },
   "devDependencies": {
     "@types/fastify-cors": "^2.1.0",
-    "@types/node": "^20.12.8",
+    "@types/node": "^20.14.5",
     "nodemon": "^3.1.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.3"
+    "tsx": "^4.15.6",
+    "typescript": "^5.4.5"
   }
 }

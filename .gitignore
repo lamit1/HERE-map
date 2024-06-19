@@ -1,5 +1,6 @@
 client/here-app/package-lock.json
 server/src/package-lock.json
 server/src/.env
-server/src/.env
-server/src/.env
+server/src/crawler/json/*.json
+.vscode/launch.json
+server/src/package-lock.json

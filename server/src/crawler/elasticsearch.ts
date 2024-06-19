@@ -2,13 +2,16 @@ import { FastifyInstance } from "fastify";
 import { DataItem } from "./json";
 import envConfig from "../envConfig";
 import { generator } from "./utils";
-import { createRequire } from "module";
+import { configDotenv } from "dotenv";
+
+configDotenv();
 
 interface HitSource {
   id: number;
   timestamp: Date | null;
   track_id: number | null;
 }
+
 
 const esQuery = {
   checkIdsQuery: (ids: Number[]) => ({
@@ -27,6 +30,27 @@ const esQuery = {
     query: {
       match: {
         id: id,
+      },
+    },
+  }),
+  checkStateQuery: (stateName: string) => ({
+    index: envConfig.INDEX_NAME,
+    body: {
+      query: {
+        bool: {
+          must: [
+            {
+              exists: {
+                field: "stateName",
+              },
+            },
+            {
+              term: {
+                "stateName.keyword": stateName,
+              },
+            },
+          ],
+        },
       },
     },
   }),
@@ -150,31 +174,282 @@ export const elasticsearchService = {
     }
   },
 
-  insertStateOverviews: async (server: FastifyInstance, overviews: any[]) => {
+  insertStateArticle: async (server: FastifyInstance, overview: any) => {
     try {
-      if (overviews.length > 0) {
-        const body = overviews.flatMap((overview) => {
-          const randomId = generator.getRandomId();
-          return [
-            {
-              index: {
-                _index: envConfig.INDEX_NAME,
-                _id: randomId,
-              },
-            },
-            {
-              ...overview,
-              track_id: overview.track_id || randomId,
-            },
-          ];
-        });
-        const response = await server.elastic.bulk({ body });
-        if (response.errors) {
-          console.error(response.items);
-        }
-      }
+      const id = generator.getRandomId();
+      const response = await server.elastic.index({
+        index: envConfig.INDEX_NAME!,
+        id: id.toString(),
+        document: overview,
+      });
     } catch (error) {
       console.error("Error inserting overviews into Elasticsearch:", error);
+    }
+  },
+
+  isStateArticleExisted: async (server: FastifyInstance, stateName: string) => {
+    const res = await server.elastic.search<HitSource>(
+      esQuery.checkStateQuery(stateName)
+    );
+    return res.hits.hits.length > 0;
+  },
+
+  isIndexExisted: async (server: FastifyInstance, indexName: string) => {
+    return await server.elastic.indices.exists({ index: indexName });
+  },
+  createIndex: async (
+    server: FastifyInstance,
+    indexName: string
+  ) => {
+    try {
+      await server.elastic.indices.create({
+        index: indexName,
+        body: {
+          mappings: {
+            properties: {
+              coordinates: {
+                type: "geo_point",
+              },
+              description: {
+                type: "text",
+                fields: {
+                  keyword: {
+                    type: "keyword",
+                    ignore_above: 256,
+                  },
+                },
+              },
+              id: {
+                type: "text",
+                fields: {
+                  keyword: {
+                    type: "keyword",
+                    ignore_above: 256,
+                  },
+                },
+              },
+              location: {
+                properties: {
+                  country: {
+                    type: "text",
+                    fields: {
+                      keyword: {
+                        type: "keyword",
+                        ignore_above: 256,
+                      },
+                    },
+                  },
+                  county: {
+                    type: "text",
+                    fields: {
+                      keyword: {
+                        type: "keyword",
+                        ignore_above: 256,
+                      },
+                    },
+                  },
+                  locality: {
+                    type: "text",
+                    fields: {
+                      keyword: {
+                        type: "keyword",
+                        ignore_above: 256,
+                      },
+                    },
+                  },
+                  street: {
+                    type: "text",
+                    fields: {
+                      keyword: {
+                        type: "keyword",
+                        ignore_above: 256,
+                      },
+                    },
+                  },
+                },
+              },
+              name: {
+                type: "text",
+                fields: {
+                  keyword: {
+                    type: "keyword",
+                    ignore_above: 256,
+                  },
+                },
+              },
+              photos: {
+                properties: {
+                  edges: {
+                    properties: {
+                      node: {
+                        properties: {
+                          caption: {
+                            type: "text",
+                            fields: {
+                              keyword: {
+                                type: "keyword",
+                                ignore_above: 256,
+                              },
+                            },
+                          },
+                          url: {
+                            type: "text",
+                            fields: {
+                              keyword: {
+                                type: "keyword",
+                                ignore_above: 256,
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                  primary: {
+                    properties: {
+                      caption: {
+                        type: "text",
+                        fields: {
+                          keyword: {
+                            type: "keyword",
+                            ignore_above: 256,
+                          },
+                        },
+                      },
+                      url: {
+                        type: "text",
+                        fields: {
+                          keyword: {
+                            type: "keyword",
+                            ignore_above: 256,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              price: {
+                type: "text",
+                fields: {
+                  keyword: {
+                    type: "keyword",
+                    ignore_above: 256,
+                  },
+                },
+              },
+              rating: {
+                properties: {
+                  provider: {
+                    type: "text",
+                    fields: {
+                      keyword: {
+                        type: "keyword",
+                        ignore_above: 256,
+                      },
+                    },
+                  },
+                  value: {
+                    type: "float",
+                  },
+                },
+              },
+              reviews: {
+                properties: {
+                  nodes: {
+                    properties: {
+                      author: {
+                        properties: {
+                          name: {
+                            type: "text",
+                            fields: {
+                              keyword: {
+                                type: "keyword",
+                                ignore_above: 256,
+                              },
+                            },
+                          },
+                          picture: {
+                            type: "text",
+                            fields: {
+                              keyword: {
+                                type: "keyword",
+                                ignore_above: 256,
+                              },
+                            },
+                          },
+                        },
+                      },
+                      body: {
+                        type: "text",
+                        fields: {
+                          keyword: {
+                            type: "keyword",
+                            ignore_above: 256,
+                          },
+                        },
+                      },
+                      date: {
+                        type: "date",
+                      },
+                      language: {
+                        type: "text",
+                        fields: {
+                          keyword: {
+                            type: "keyword",
+                            ignore_above: 256,
+                          },
+                        },
+                      },
+                      rating: {
+                        type: "long",
+                      },
+                      title: {
+                        type: "text",
+                        fields: {
+                          keyword: {
+                            type: "keyword",
+                            ignore_above: 256,
+                          },
+                        },
+                      },
+                      url: {
+                        type: "text",
+                        fields: {
+                          keyword: {
+                            type: "keyword",
+                            ignore_above: 256,
+                          },
+                        },
+                      },
+                    },
+                  },
+                  totalCount: {
+                    type: "long",
+                  },
+                },
+              },
+              timestamp: {
+                type: "date",
+              },
+              track_id: {
+                type: "long",
+              },
+              website: {
+                type: "text",
+                fields: {
+                  keyword: {
+                    type: "keyword",
+                    ignore_above: 256,
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+    } catch (error) {
+      console.log(error);
     }
   },
 };

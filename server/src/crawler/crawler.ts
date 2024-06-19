@@ -8,6 +8,7 @@ import { DataItem, readFolder, readItemsFromFile } from "./json";
 import { elasticsearchService } from "./elasticsearch";
 import { queryInBatch } from "./search";
 import envConfig from "../envConfig";
+import { configDotenv } from "dotenv";
 
 // if (cluster.isPrimary) {
 //   console.log(`Primary ${process.pid} is running`);
@@ -22,6 +23,8 @@ import envConfig from "../envConfig";
 //   });
 // } else {
 const server = fastify();
+configDotenv();
+
 
 export const delay = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -58,9 +61,15 @@ let _count = 0;
 let idArray = [];
 
 const run = async () => {
+  if (
+    !(await elasticsearchService.isIndexExisted(server, envConfig.INDEX_NAME!))
+  ) {
+    await elasticsearchService.createIndex(server, envConfig.INDEX_NAME!);
+  }
+  console.log(envConfig.JSON_STORE_FILE_PATH)
   // Batch size for fetching docs
   const batchSize = Number(envConfig.BATCH_SIZE);
-  const basePath = "./crawler/json";
+  const basePath = envConfig.JSON_STORE_FILE_PATH!;
   const fileNames = readFolder(basePath);
 
   for (
@@ -73,7 +82,6 @@ const run = async () => {
     // if (cluster.worker?.id === undefined) continue;
     // if (fileNames.indexOf(fileName) % numCPUs === cluster.worker?.id - 1) {
     const fileDataItems = readItemsFromFile(fileName, basePath);
-    idArray.push();
     await recursiveQuery(server, fileDataItems, 0, batchSize);
     // }
   }
@@ -108,13 +116,11 @@ const recursiveQuery = async (
       )
     );
     const reqPerSec = (fetchedDocs.length * 1000) / (Date.now() - start);
-    if(fetchedDocs.length > 25) {
+    if (fetchedDocs.length > 25) {
       sumReqPerSec = sumReqPerSec + reqPerSec;
       _count++;
     }
-    console.log(
-      `Average reqs/s : ${(sumReqPerSec / _count).toFixed(1)}`
-    );
+    console.log(`Average reqs/s : ${(sumReqPerSec / _count).toFixed(1)}`);
     console.log(`Time between batch call: ${Date.now() - start} ms`);
     start = Date.now();
 
@@ -125,8 +131,7 @@ const recursiveQuery = async (
           x.status === "fulfilled" && x.value
       )
       .map((x) => x.value);
-    console.log(
-      "Number of fetched docs: " +  fulfilledDocs.length);
+    console.log("Number of fetched docs: " + fulfilledDocs.length);
 
     if (fulfilledDocs.length > 25) {
       await delay(Number(envConfig.FETCH_DELAY));

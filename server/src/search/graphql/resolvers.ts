@@ -1,5 +1,7 @@
 import { app } from "../..";
 import envConfig from "../../envConfig";
+import { Coordinates } from "./models";
+import { MapQuestAPI } from "./search";
 
 const resolvers = {
   Query: {
@@ -26,7 +28,7 @@ const resolvers = {
         const doc = item._source as any;
         return {
           ...doc,
-          id: doc['track_id'],
+          id: doc["track_id"],
         };
       });
     },
@@ -37,13 +39,14 @@ const resolvers = {
         index: envConfig.INDEX_NAME,
         query: {
           match: {
-            track_id : id
+            track_id: id,
           },
         },
       });
       const doc = res.hits.hits?.[0]._source as any;
+
       return {
-        ...doc
+        ...doc,
       };
     },
     search: async (
@@ -81,14 +84,70 @@ const resolvers = {
           },
         },
       });
-      return res.hits.hits.map((item) => {
+      return res.hits.hits.slice(0).map((item) => {
         const doc = item._source as any;
         return {
           ...doc,
-          id: doc['track_id']
+          id: doc["track_id"],
         };
       });
     },
+    article: async (
+      _: any,
+      { stateName }: { stateName: string },
+      context: any
+    ) => {
+      const res = await app.elastic.search({
+        index: envConfig.INDEX_NAME,
+        body: {
+          query: {
+            match: {
+              ["postalAbbreviations"]:
+                decodeURIComponent(stateName).toUpperCase(),
+            },
+          },
+        },
+      });
+      let docs = res.hits.hits.map((item) => item._source) as any[];
+      try {
+        const queries = docs?.[0]?.locations?.map(
+          (location: { postions: Coordinates; title: String }) => ({
+            latitude: location?.postions?.latitude,
+            longitude: location?.postions?.longitude,
+            query: location.title,
+          })
+        );
+        let images: any[] = [];
+        for (const query of queries) {
+          images = [];
+          if (!(query.latitude || query.longitude)) continue;
+          const coord = {
+            latitude: query.latitude,
+            longitude: query.longitude,
+          } as Coordinates;
+          const mapQuestResponse = await MapQuestAPI.search(
+            coord,
+            query.query as String
+          );
+          images.push(
+            mapQuestResponse.nodes
+              .map((node: { photos: any }) => node.photos.edges)
+              .flat()
+              .map((edge: { node: { url: any } }) => edge.node.url)
+          );
+          const index = queries.indexOf(query);
+          docs[0].locations[index].images = images
+            .filter((image) => image.length > 0)
+            .flat();
+        }
+        console.log(JSON.stringify(docs[0]));
+        return {
+          ...docs[0],
+        };
+      } catch (err) {
+        console.log(err);
+      }
+    }
   },
 };
 

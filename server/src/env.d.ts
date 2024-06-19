@@ -5,15 +5,11 @@ declare global {
         JSON_STORE_FILE_PATH : string | "D:/",
         GRAPHQL_URI : string,
         INDEX_NAME: string,
-        PRIVATE_ENCRYPT_KEY: string
         FETCH_DELAY: string,
         BATCH_SIZE: string,
         FILE_INDEX_START: string,
         FAIL_DELAY: string,
         GEMINI_API_KEY: string,
-        BACK4APP_APP_ID: string,
-        BACK4APP_API_KEY: string,
-        BACK4APP_URL: string
       }
     }
   }

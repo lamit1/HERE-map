@@ -26,7 +26,6 @@ export const readItemsFromFile = (fileName: string, folderPath: string) => {
     const { id, timestamp } = item;
     if (timestamp !== null) {
       if (!latestTimestamps[id]) {
-        // console.log("insert");
         latestTimestamps[id] = timestamp;
       } else if (latestTimestamps[id] !== null) {
         latestTimestamps[id] = timestamp;
