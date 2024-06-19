@@ -35,9 +35,30 @@
         - layout: React Layout components (SideBar, Map, Header, Container, ...)
         - utils: helper functions
 - server: 
-    - jsonDownloader: Downloading json file to crawling location.  
-    - crawler: Crawling location detail and prompting article based on Gemini.
+    - jsonDownloader: server downloading json file to crawling location.  
+        - xml.ts:
+            + fetchUrlWithTimestamp(stateUrl) ->  fetch data from us-all.xml([Link](https://www.mapquest.com/sitemaps/usa/us-all.xml)]) and transform into DataItem
+            + handleWriteFile -> write DataItem to STORE_JSON_PATH
+    - crawler: server crawling location detail and prompting article based on Gemini.
+        - crawler.ts:
+            + recursiveQuery -> query to mapquest api in batch from index to (index + batchSize) of fileDataItems{timeStamp + id} which read from Json file.
+        - elasticsearch.ts:
+            + checkExistedLocations -> check existed location in elasticsearch then return.
+            + insertLocations -> insert locations to elsaticsearch.
+            + insertStateArticle -> insert article to elasticsearch.
+            + isStateArticleExisted -> check article is existed.
+            + isIndexExisted -> check index has already existe. 
+            + createIndex(server, indexName: string) -> create index in elasticsearch
+        - json.ts:
+            + readItemsFromFile -> read DataItems {timestamp +id} from json file which was downloaded in jsonDownloader module.
+        - gemini.ts:
+            + init -> init AI model.
+            + query(q: String) -> promt the desccription after init model.
+        - prompter.ts:
+            + server for prompting and insert into elasticsearch  
     - search: search server for client call through graphql api.
+        - searchById -> call GraphQL with MapQuest id
+    
 # How to run project
 1. Clone project.
 - git clone https://github.com/lamit1/HERE-map.git
@@ -52,8 +73,9 @@
     - npm run dev.
 - BE:
     - cd server/src
-    - Download locations json files: npm run downloader.
-    - Running crawler: npm run crawler.
+    - Download locations json files: npm run json-download.
+    - Running crawler: npm run locations-crawl.
+    - Running prompter: npm run article-prompt
     - Running server: npm start.
 # Functionality:
     - Locations search: Search nearby location based on coordinate of user and their query String (Completed)
