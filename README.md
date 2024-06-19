@@ -62,7 +62,7 @@
     - Print instruction: Print the routing instruction (Completed)
     - Places review: (On going...)
         - Based on the promted article, get place's name and lat, long.
-        - Collect images which is nearby that place and sort it by order of totalReviews.
+        - Collect images from elasticsearch which is nearby that place and sort places by order of totalReviews.
         - Each places should atleast get min 12 images.
 # Some image relate
 ![image](https://github.com/lamit1/HERE-map/assets/84758368/e41b3c20-af7d-400b-92e3-b9cced03d9bb)
