@@ -40,10 +40,12 @@
     - search: search server for client call through graphql api.
 # How to run project
 1. Clone project.
-2. Set up config.
+- git clone https://github.com/lamit1/HERE-map.git
+2. Install dependencies.
+- Download and run Elasticsearch [Link](https://www.elastic.co/guide/en/elasticsearch/reference/8.14/zip-windows.html)
 - cd client/here-app -> npm install
 - cd server/src -> npm install  
-- config .env file: 
+- config .env file (see .env.example) 
 3. Run projects command
 - FE: 
     - cd client/here-app
