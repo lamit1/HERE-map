@@ -8,8 +8,6 @@ import elasticsearch from "@fastify/elasticsearch";
 
 configDotenv();
 
-
-
 const states = [
   "Alabama",
   "Alaska",
@@ -90,7 +88,7 @@ const top10LocationsPrompt = (stateName: string) =>
             link:{
             url
             },
-            postions: {
+            positions: {
                 latitude,
                 longitude
             },
@@ -98,9 +96,14 @@ const top10LocationsPrompt = (stateName: string) =>
     }
     `;
 
-
 const run = async () => {
+  if (
+    !(await elasticsearchService.isIndexExisted(server, envConfig.INDEX_NAME!))
+  ) {
+    await elasticsearchService.createIndex(server, envConfig.INDEX_NAME!);
+  }
   googleGemini.init();
+
   // await initCities();
   // const cityArr = cities.flat().map((city) => city.name);
 

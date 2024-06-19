@@ -37,7 +37,7 @@
 - server: 
     - jsonDownloader: server downloading json file to crawling location.  
         - xml.ts:
-            + fetchUrlWithTimestamp(stateUrl) ->  fetch data from us-all.xml([Link](https://www.mapquest.com/sitemaps/usa/us-all.xml)]) and transform into DataItem
+            + fetchUrlWithTimestamp(stateUrl) ->  fetch data from us-all.xml([Link](https://www.mapquest.com/sitemaps/usa/us-all.xml)) and transform into DataItem
             + handleWriteFile -> write DataItem to STORE_JSON_PATH
     - crawler: server crawling location detail and prompting article based on Gemini.
         - crawler.ts:

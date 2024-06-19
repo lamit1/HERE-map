@@ -13,13 +13,7 @@ const ImageMasonryContainer = ({ images = [], columnSize = 3 }) => {
 
   if (images === null || images.length === 0)
     return (
-      <div className="flex bg-text flex-row flex-wrap gap-2 p-2 mt-2 rounded-md overflow-hidden">
-        <img
-          loading="lazy"
-          src={'/assets/no-image.jpg'}
-          className=" w-36 hover:opacity-50 hover:cursor-pointer h-auto rounded-md border-2 border-bg"
-        ></img>
-      </div>
+      <div className="text-red text-md">No images avaliable</div>
     );
 
   return (

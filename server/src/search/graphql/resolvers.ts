@@ -111,9 +111,9 @@ const resolvers = {
       let docs = res.hits.hits.map((item) => item._source) as any[];
       try {
         const queries = docs?.[0]?.locations?.map(
-          (location: { postions: Coordinates; title: String }) => ({
-            latitude: location?.postions?.latitude,
-            longitude: location?.postions?.longitude,
+          (location: { positions: Coordinates; title: String }) => ({
+            latitude: location?.positions?.latitude,
+            longitude: location?.positions?.longitude,
             query: location.title,
           })
         );
@@ -129,8 +129,15 @@ const resolvers = {
             coord,
             query.query as String
           );
+          const orderRatedLocations = mapQuestResponse.nodes.sort(
+            (nodeA: any, nodeB: any) =>
+              nodeB?.reviews?.totalCount - nodeA?.reviews?.totalCount
+          ).filter((e: any) => e !== null);
+          
+          console.log(orderRatedLocations.length);
           images.push(
-            mapQuestResponse.nodes
+            orderRatedLocations  
+              .slice(0, 5)
               .map((node: { photos: any }) => node.photos.edges)
               .flat()
               .map((edge: { node: { url: any } }) => edge.node.url)
@@ -140,14 +147,13 @@ const resolvers = {
             .filter((image) => image.length > 0)
             .flat();
         }
-        console.log(JSON.stringify(docs[0]));
         return {
           ...docs[0],
         };
       } catch (err) {
         console.log(err);
       }
-    }
+    },
   },
 };
 

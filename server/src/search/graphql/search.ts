@@ -2,7 +2,7 @@ import AxiosCustomInstance from "../../crawler/instanceAxios";
 import { Coordinates } from "./models";
 
 const searchQuery = `query Search($coord: GeoPointInput!, $query: String!) {
-    search(near: $coord, query: $query, first: 50) {
+    autosuggest(near: $coord, query: $query, first: 100) {
       nodes {
         ... on LocalBusiness {
           name
@@ -38,7 +38,7 @@ export const MapQuestAPI = {
           },
         }
       );
-      return response.data.data.search;
+      return response.data.data.autosuggest;
     } catch (err) {
       console.log(err);
       return null;

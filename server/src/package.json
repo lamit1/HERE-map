@@ -2,9 +2,9 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "nodemon index.ts",
-    "json-download": "tsx jsonDownloader/xml.ts",
-    "locations-crawl": "nodemon crawler/crawler.ts",
-    "article-prompt": "nodemon crawler/prompter.ts"
+    "download": "tsx jsonDownloader/xml.ts",
+    "crawl": "nodemon crawler/crawler.ts",
+    "prompt": "nodemon crawler/prompter.ts"
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",
