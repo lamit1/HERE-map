@@ -53,10 +53,11 @@
     - Download locations json files: npm run downloader.
     - Running crawler: npm run crawler.
     - Running server: npm start.
-# 
 # Functionality:
-    - Locations search. (Completed)
-    - Location routing. (Completed)
+    - Locations search: Search nearby location based on coordinate of user and their query String (Completed)
+    - Location detail: Get location detail info by id (Completed)
+    - Location routing: Get routing planner using here service (Completed)
+    - Print instruction: Print the routing instruction (Completed)
     - Places review. (On going...)
 # Some image relate
 ![image](https://github.com/lamit1/HERE-map/assets/84758368/e41b3c20-af7d-400b-92e3-b9cced03d9bb)
